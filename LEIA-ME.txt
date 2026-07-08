@@ -1,0 +1,31 @@
+TeepSaude — Painel Clínico
+==========================
+
+COMO EXECUTAR:
+  Abra index.html no navegador (Chrome recomendado).
+
+LOGIN DEMO:
+  Clínica (admin):  clinica / admin123
+  Médico:           carlos.mendes / medico1
+
+MÓDULOS:
+
+  MÓDULO 1 — Monitoramento (sempre ativo)
+    Pacientes, alertas, sinais vitais, histórico,
+    mensagens, médicos, configurações.
+
+  MÓDULO 2 — Clínica Completa (ativar com chave)
+    Agenda + Painel + Consulta + Receita +
+    Atestado + Exames + Medicações.
+
+COMO ATIVAR O MÓDULO CLÍNICA COMPLETA:
+  1. Login como clínica / admin123
+  2. Configurações → Módulos
+  3. Cole uma das chaves e clique Ativar:
+       TEEP-CONS-2024-DEMO
+       TEEP-CONS-2025-FULL
+       TEEP-CONS-PRO1-ATIV
+  A chave fica salva no localStorage (persiste entre sessões).
+
+IA (opcional):
+  Configurações → IA / API Key → cole sua chave sk-ant-...

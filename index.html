@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeepSaude — Painel Clínico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body><div id="loginScreen" class="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-logo-wrap">
+      <img class="login-logo-img" src="logo.png" alt="TeepSaude" width="320" height="120">
+    </div>
+    <p class="login-sub">Painel clínico — demonstração</p>
+    <div class="login-field">
+      <label for="loginUsuario">Usuário</label>
+      <input type="text" id="loginUsuario" autocomplete="username" placeholder="clínica ou CRM do médico" />
+    </div>
+    <div class="login-field">
+      <label for="loginSenha">Senha</label>
+      <input type="password" id="loginSenha" autocomplete="current-password" />
+    </div>
+    <p id="loginErro" class="login-erro" style="display:none"></p>
+    <div class="login-actions">
+      <button type="button" class="btn-primary login-btn-full" onclick="tentarLogin('clinica')">Entrar como Clínica</button>
+      <button type="button" class="btn-outline login-btn-full" onclick="tentarLogin('medico')">Entrar como Médico</button>
+    </div>
+    <p class="login-foot">Demo: <strong>clinica</strong> / <strong>admin123</strong> ou usuário e senha de cada médico (ex.: carlos.mendes / medico1).</p>
+  </div>
+</div><div id="appLayout" style="display:none">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-brand">
+        <div style="min-width:0">
+        <div class="topbar-title" id="topbarTitle">Carteira de pacientes</div>
+        <div class="topbar-date" id="topbarDate"></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box" id="searchBoxWrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Buscar paciente..." id="searchInput">
+        </div>
+        <div class="notif-btn" id="notifBtn">🔔<div class="notif-dot"></div></div>
+      </div>
+    </div>
+    <div class="notif-panel" id="notifPanel">
+      <div class="notif-panel-header">
+        Notificações <button type="button" class="notif-panel-close" onclick="toggleNotif()" aria-label="Fechar"></button>
+      </div>
+      <div id="notifList"></div>
+    </div>
+    <div class="content">
+      <div class="page active" id="page-pacientes">
+        <div class="metrics-row" id="metricsRowPac"></div>
+        <div class="main-grid">
+          <div class="panel" id="patientPanelFull"></div>
+          <div class="side-col" id="sideCol"></div>
+        </div>
+      </div>
+      <div class="page" id="page-detalhe"><div id="detalheContent"></div></div>
+      <div class="page" id="page-agenda"><div id="agendaPage"></div></div>
+      <div class="page" id="page-painel"><div id="painelPage"></div></div>
+      <div class="page" id="page-consulta"><div id="consultaAtivaPage"></div></div>
+      <div class="page" id="page-examesSolicitacoes"><div id="examesSolicitacoesPage"></div></div>
+      <div class="page" id="page-examesResultados"><div id="examesResultadosPage"></div></div>
+      <div class="page" id="page-medicacoes"><div id="medicacoesPage"></div></div>
+      <div class="page" id="page-medicos"><div id="medicosPage"></div></div>
+      <div class="page" id="page-configuracoes"><div id="configuracoesPage"></div></div>
+    </div>
+  </main>
+</div><!-- MODAL MENSAGEM -->
+<div class="modal-overlay" id="msgOverlay" onclick="if(event.target===this)closeMsgModal()">
+  <div class="modal" id="msgModal"></div>
+</div>
+
+<!-- MODAL ADICIONAR MEDICAÇÃO -->
+<div class="modal-overlay med-overlay" id="medOverlay" onclick="if(event.target===this)closeAddMedModal()">
+  <div class="modal modal-med" id="medModalRoot" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- MODAL NOVO AGENDAMENTO -->
+<div class="modal-overlay agenda-overlay" id="agendaOverlay" onclick="if(event.target===this)closeAgendaModal()">
+  <div class="modal modal-agenda" id="agendaModalRoot" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- MODAL ATESTADO MÉDICO -->
+<div class="modal-overlay atestado-overlay" id="atestadoOverlay" onclick="if(event.target===this)closeAtestadoModal()">
+  <div class="modal modal-atestado" id="atestadoModalRoot" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- MODAL HISTÓRICO DE MEDIÇÕES (Saúde / Corpo / Medicação) -->
+<div class="modal-overlay hist-med-overlay" id="histMedOverlay" onclick="if(event.target===this)closeMedicaoHistoricoModal()">
+  <div class="modal modal-hist-med" id="histMedModalRoot" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- MODAL CADASTRO DE PACIENTE -->
+<div class="modal-overlay cad-pac-overlay" id="cadPacOverlay" onclick="if(event.target===this)closeCadastroPacienteModal()">
+  <div class="modal modal-cad-pac" id="cadPacModalRoot" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="cadPacModalTitle">Incluir paciente</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="cadPacModalSub">Cadastro na clínica ou vínculo com titular do app (demo — dados só neste navegador).</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeCadastroPacienteModal()" aria-label="Fechar"></button>
+    </div>
+    <div class="cad-pac-modo-tabs" role="tablist">
+      <button type="button" class="cad-pac-modo-btn active" id="cadPacTabCadastro" role="tab" aria-selected="true"
+        onclick="setCadPacModo('cadastro')">Cadastrar na clínica</button>
+      <button type="button" class="cad-pac-modo-btn" id="cadPacTabVinculo" role="tab" aria-selected="false"
+        onclick="setCadPacModo('vinculo')">Vincular titular do app</button>
+    </div>
+    <form class="cad-pac-form" id="cadPacForm" onsubmit="event.preventDefault();handleCadPacFormSubmit();">
+      <div class="cad-pac-grid" id="cadPacBlocoCadastro" style="padding-top:4px">
+        <div class="cad-pac-field cad-pac-field--full">
+          <label for="cadPacNome">Nome completo *</label>
+          <input type="text" id="cadPacNome" name="nome" autocomplete="name" placeholder="Ex.: Ana Paula Ferreira">
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacIdade">Idade *</label>
+          <input type="number" id="cadPacIdade" name="idade" min="0" max="130" placeholder="Anos">
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacSexo">Sexo</label>
+          <select id="cadPacSexo" name="sexo">
+            <option value="F">Feminino</option>
+            <option value="M">Masculino</option>
+          </select>
+        </div>
+        <div class="cad-pac-field cad-pac-field--full">
+          <label for="cadPacCondicoes">Condições / motivo do acompanhamento</label>
+          <textarea id="cadPacCondicoes" name="condicoes" placeholder="Ex.: Hipertensão, acompanhamento pós-operatório…"></textarea>
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacTelefone">Telefone</label>
+          <input type="tel" id="cadPacTelefone" name="telefone" autocomplete="tel" placeholder="(11) 90000-0000">
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacEmail">E-mail</label>
+          <input type="email" id="cadPacEmail" name="email" autocomplete="email" placeholder="nome@email.com">
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacPeso">Peso (kg)</label>
+          <input type="text" id="cadPacPeso" name="peso" inputmode="decimal" placeholder="Ex.: 72 ou 72,5">
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacAltura">Altura (m)</label>
+          <input type="text" id="cadPacAltura" name="altura" inputmode="decimal" placeholder="Ex.: 1,65">
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacPressao">Pressão (mmHg)</label>
+          <input type="text" id="cadPacPressao" name="pressao" placeholder="120/80">
+          <span class="cad-pac-hint">Formato sistólica/diastólica. Vazio = 120/80.</span>
+        </div>
+        <div class="cad-pac-field">
+          <label for="cadPacStatus">Risco inicial</label>
+          <select id="cadPacStatus" name="status">
+            <option value="estavel">Estável</option>
+            <option value="atencao">Em observação</option>
+            <option value="critico">Crítico</option>
+          </select>
+        </div>
+        <div class="cad-pac-field cad-pac-field--full">
+          <label>Foto do paciente (opcional)</label>
+          <div class="cad-pac-foto-row">
+            <img id="cadPacFotoPreview" class="cad-pac-foto-preview" style="display:none" alt="">
+            <div class="cad-pac-foto-actions">
+              <input type="file" id="cadPacFotoInput" class="cad-pac-foto-input-hidden" accept="image/jpeg,image/png,image/webp,image/gif" tabindex="-1" aria-hidden="true" onchange="onCadPacFotoFileChange(event)">
+              <button type="button" class="btn-outline" onclick="document.getElementById('cadPacFotoInput').click()">Escolher foto</button>
+              <button type="button" id="cadPacFotoRemoveBtn" class="btn-outline" style="display:none" onclick="limparFotoCadastroPaciente()">Remover foto</button>
+            </div>
+          </div>
+          <span class="cad-pac-hint">Aparece na lista, agenda e painel para o médico reconhecer o rosto (nesta demo fica só no navegador).</span>
+        </div>
+        <div class="cad-pac-field cad-pac-field--full" style="margin-top:4px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="cad-pac-section-title">App do paciente · sincronizado com a clínica</div>
+          <label class="cad-pac-check">
+            <input type="checkbox" id="cadPacSyncApp" checked>
+            <span>Criar <strong>usuário</strong> e <strong>senha provisória</strong> no app — no 1º acesso o paciente define nova senha e a conta fica vinculada a este cadastro.</span>
+          </label>
+          <label class="cad-pac-check">
+            <input type="checkbox" id="cadPacWaConvite" checked>
+            <span>Após cadastrar, <strong>abrir o WhatsApp</strong> com o link para baixar o app e as credenciais (precisa de telefone com DDD).</span>
+          </label>
+          <p class="cad-pac-hint" style="margin-top:12px;margin-bottom:0">Demo: a senha aparece em texto para você copiar. Em produção, use canal seguro e não armazene senha em claro.</p>
+        </div>
+      </div>
+      <div class="cad-pac-grid" id="cadPacBlocoVinculo" style="padding-top:4px;display:none">
+        <div class="cad-pac-field cad-pac-field--full">
+          <div class="cad-pac-section-title" style="margin-bottom:8px">Titular já existe só no app</div>
+          <p class="cad-pac-hint" style="margin-bottom:12px">
+            O titular gera um <strong>código de vínculo</strong> no app. A clínica não vê nome, e-mail ou sinais até o titular <strong>aprovar</strong> o pedido no celular. Nesta demo você pode simular a aprovação no perfil do paciente.
+          </p>
+        </div>
+        <div class="cad-pac-field cad-pac-field--full">
+          <label for="cadPacCodigoVinculo">Código de vínculo *</label>
+          <input type="text" id="cadPacCodigoVinculo" name="codigoVinculo" autocomplete="off" placeholder="Ex.: TS-7K2M-X9">
+          <span class="cad-pac-hint">Demo: tente <code style="font-size:11px">TS-7K2M-X9</code> ou <code style="font-size:11px">TS-3N8P-Q1</code>.</span>
+        </div>
+        <div class="cad-pac-field cad-pac-field--full">
+          <label for="cadPacNotaVinculo">Observação interna (opcional)</label>
+          <textarea id="cadPacNotaVinculo" name="notaVinculo" placeholder="Ex.: Dr(a). Silva · retorno hipertensão"></textarea>
+        </div>
+      </div>
+      <div class="cad-pac-footer" id="cadPacFooterForm">
+        <button type="button" class="btn-outline" onclick="closeCadastroPacienteModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="cadPacSubmitBtn">Cadastrar paciente</button>
+      </div>
+    </form>
+    <div class="cad-pac-sucesso" id="cadPacSucesso" style="display:none">
+      <div id="cadPacSucessoBody"></div>
+      <div class="cad-pac-footer" id="cadPacFooterOk">
+        <button type="button" class="btn-primary" style="flex:1" onclick="closeCadastroPacienteModal()">Concluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL LINHA DO TEMPO DA CONSULTA -->
+<div class="modal-overlay hist-med-overlay" id="consultaTimelineOverlay" onclick="if(event.target===this)fecharModalLinhaTempoConsulta()">
+  <div class="modal modal-hist-med" id="consultaTimelineModalRoot" onclick="event.stopPropagation()" style="max-width:520px"></div>
+</div>
+<!-- MODAL TRIAGEM (antes do atendimento clínico) -->
+<div class="modal-overlay med-overlay" id="triagemOverlay" onclick="if(event.target===this)fecharModalTriagem()">
+  <div class="modal modal-med" id="triagemModalRoot" onclick="event.stopPropagation()" style="max-width:520px"></div>
+</div>
+<!-- MODAL NOVA SOLICITAÇÃO DE EXAME (clínica) -->
+<div class="modal-overlay med-overlay" id="exameSolicOverlay" onclick="if(event.target===this)fecharModalExameSolicitacao()">
+  <div class="modal modal-med" id="exameSolicModalRoot" onclick="event.stopPropagation()" style="max-width:520px"></div>
+</div>
+<!-- MODAL VISUALIZAR RESULTADO DE EXAME -->
+<div class="modal-overlay hist-med-overlay" id="exameResultOverlay" onclick="if(event.target===this)fecharModalExameResultado()">
+  <div class="modal modal-hist-med" id="exameResultModalRoot" onclick="event.stopPropagation()" style="max-width:640px"></div>
+</div>
+<!-- MODAL RECEITA MÉDICA -->
+<div class="modal-overlay atestado-overlay" id="receitaOverlay" onclick="if(event.target===this)fecharReceitaModal()">
+  <div class="modal modal-atestado" id="receitaModalRoot" onclick="event.stopPropagation()"></div>
+</div>
+<!-- MODAL CADASTRO / EDIÇÃO MÉDICO -->
+<div class="modal-overlay med-overlay" id="medicoCadOverlay" onclick="if(event.target===this)fecharModalMedico()">
+  <div class="modal modal-med" id="medicoCadModalRoot" onclick="event.stopPropagation()" style="max-width:520px"></div>
+</div></div>
+<script src="js/dashboard-data.js"></script>
+<script src="js/license-module.js"></script>
+<script src="js/dashboard-app.js"></script>
+<script src="js/exam-module.js"></script>
+</body>
+</html>
