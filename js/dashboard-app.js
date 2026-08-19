@@ -736,11 +736,32 @@ function navigateTo(page, extra) {
   }
 }
 
-/** Logo na pasta do index: logo.png ou logo.svg */
+/** Logo na pasta do index (logo.png). Tenta caminhos relativos ao HTML. */
+function logoSrcCandidates() {
+  const seen = new Set();
+  const out = [];
+  const push = (u) => {
+    if (!u || seen.has(u)) return;
+    seen.add(u);
+    out.push(u);
+  };
+  try { push(new URL('logo.png', document.baseURI).href); } catch (e) {}
+  push('./logo.png');
+  push('logo.png');
+  return out;
+}
+
 function tryLogoFallback(img) {
-  if (!img.dataset.logoStep) {
-    img.dataset.logoStep = '1';
-    img.src = 'logo.svg';
+  const list = logoSrcCandidates();
+  const tried = new Set((img.dataset.logoTried || '').split('|').filter(Boolean));
+  tried.add(img.getAttribute('src') || '');
+  tried.add(img.src || '');
+  for (let i = 0; i < list.length; i++) {
+    const cand = list[i];
+    if (tried.has(cand)) continue;
+    tried.add(cand);
+    img.dataset.logoTried = Array.from(tried).join('|');
+    img.src = cand;
     return;
   }
   img.style.display = 'none';
@@ -804,10 +825,7 @@ function renderSidebar() {
   el.innerHTML = `
     <div class="sidebar-logo">
       <div class="sidebar-logo-banner">
-        <img class="brand-logo-img" src="logo.png" alt="${dadosClinica.nome}" onerror="tryLogoFallback(this)">
-      </div>
-      <div class="sidebar-logo-text">
-        <div class="logo-name">${dadosClinica.nome}</div>
+        <img class="brand-logo-img" src="./logo.png" alt="${dadosClinica.nome}" onerror="tryLogoFallback(this)">
       </div>
     </div>
     <div class="nav-section-label">Principal</div>
@@ -5715,32 +5733,18 @@ function limparAIKey() {
   if (status) status.style.display = 'none';
 }
 
-function tentarLogin(tipo) {
+function tentarLogin() {
   const u = (document.getElementById('loginUsuario') && document.getElementById('loginUsuario').value || '').trim();
   const s = (document.getElementById('loginSenha') && document.getElementById('loginSenha').value) || '';
   const err = document.getElementById('loginErro');
   if (err) { err.style.display = 'none'; err.textContent = ''; }
-  if (tipo === 'clinica') {
-    if (u.toLowerCase() === 'saude@teep.com.br' && s === 'teepsaude') {
-      sessionStorage.setItem(SESSAO_STORAGE_KEY, JSON.stringify({
-        tipo: 'clinica',
-        loginEm: Date.now(),
-      }));
-      mostrarAppLogado();
-      return;
-    }
-  } else if (tipo === 'medico') {
-    const m = medicos.find(x => x.login && x.login.usuario === u && x.login.senha === s && x.ativo !== false);
-    if (m) {
-      sessionStorage.setItem(SESSAO_STORAGE_KEY, JSON.stringify({
-        tipo: 'medico',
-        medicoId: m.id,
-        medicoNome: m.nome,
-        loginEm: Date.now(),
-      }));
-      mostrarAppLogado();
-      return;
-    }
+  if (u.toLowerCase() === 'saude@teep.com.br' && s === 'teepsaude') {
+    sessionStorage.setItem(SESSAO_STORAGE_KEY, JSON.stringify({
+      tipo: 'clinica',
+      loginEm: Date.now(),
+    }));
+    mostrarAppLogado();
+    return;
   }
   if (err) {
     err.textContent = 'Usuário ou senha incorretos.';
