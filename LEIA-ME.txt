@@ -5,27 +5,29 @@ COMO EXECUTAR:
   Abra index.html no navegador (Chrome recomendado).
 
 LOGIN DEMO:
-  Clínica (admin):  clinica / admin123
+  Clínica (admin):  saude@teep.com.br / teepsaude
   Médico:           carlos.mendes / medico1
 
-MÓDULOS:
-
-  MÓDULO 1 — Monitoramento (sempre ativo)
-    Pacientes, alertas, sinais vitais, histórico,
-    mensagens, médicos, configurações.
-
-  MÓDULO 2 — Clínica Completa (ativar com chave)
-    Agenda + Painel + Consulta + Receita +
-    Atestado + Exames + Medicações.
-
-COMO ATIVAR O MÓDULO CLÍNICA COMPLETA:
-  1. Login como clínica / admin123
-  2. Configurações → Módulos
-  3. Cole uma das chaves e clique Ativar:
-       TEEP-CONS-2024-DEMO
-       TEEP-CONS-2025-FULL
-       TEEP-CONS-PRO1-ATIV
+MÓDULO CONSULTA CLÍNICA:
+  Por padrão só o Módulo Monitoramento está ativo.
+  Para ativar o Módulo Consulta:
+    1. Faça login como clínica
+    2. Vá em Configurações → Módulos
+    3. Cole uma das chaves abaixo e clique Ativar:
+       • TEEP-CONS-2024-DEMO
+       • TEEP-CONS-2025-FULL
+       • TEEP-CONS-PRO1-ATIV
+    4. A sidebar atualiza imediatamente com os novos itens.
   A chave fica salva no localStorage (persiste entre sessões).
 
+ESTRUTURA DE ARQUIVOS:
+  index.html              → shell da SPA
+  js/dashboard-data.js    → dados mockados
+  js/license-module.js    → controle de módulos (NOVO)
+  js/dashboard-app.js     → lógica principal (modificado)
+  js/exam-module.js       → módulo de exames
+  css/dashboard.css       → design system
+
 IA (opcional):
-  Configurações → IA / API Key → cole sua chave sk-ant-...
+  Vá em Configurações → IA / API Key e cole sua chave Anthropic (sk-ant-...).
+  Sem chave o sistema funciona normalmente, apenas sem os recursos de IA.
