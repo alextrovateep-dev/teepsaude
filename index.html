@@ -16,7 +16,7 @@
     <p class="login-sub">Painel clínico — demonstração</p>
     <div class="login-field">
       <label for="loginUsuario">Usuário</label>
-      <input type="text" id="loginUsuario" autocomplete="username" placeholder="clínica ou CRM do médico" />
+      <input type="text" id="loginUsuario" autocomplete="username" placeholder="saude@teep.com.br" />
     </div>
     <div class="login-field">
       <label for="loginSenha">Senha</label>
@@ -27,7 +27,7 @@
       <button type="button" class="btn-primary login-btn-full" onclick="tentarLogin('clinica')">Entrar como Clínica</button>
       <button type="button" class="btn-outline login-btn-full" onclick="tentarLogin('medico')">Entrar como Médico</button>
     </div>
-    <p class="login-foot">Demo: <strong>clinica</strong> / <strong>admin123</strong> ou usuário e senha de cada médico (ex.: carlos.mendes / medico1).</p>
+    <p class="login-foot">Acesso: <strong>saude@teep.com.br</strong> / <strong>teepsaude</strong> ou usuário e senha de cada médico (ex.: carlos.mendes / medico1).</p>
   </div>
 </div><div id="appLayout" style="display:none">
 <div class="layout">
@@ -36,15 +36,16 @@
     <div class="topbar">
       <div class="topbar-brand">
         <div style="min-width:0">
-        <div class="topbar-title" id="topbarTitle">Carteira de pacientes</div>
+        <div class="topbar-title" id="topbarTitle"></div>
         <div class="topbar-date" id="topbarDate"></div>
         </div>
       </div>
       <div class="topbar-right">
         <div class="search-box" id="searchBoxWrap">
           <span class="search-icon">🔍</span>
-          <input type="text" placeholder="Buscar paciente..." id="searchInput">
+          <input type="text" placeholder="Buscar" id="searchInput">
         </div>
+        <button type="button" class="btn-primary topbar-incluir-btn" id="topbarIncluirBtn" onclick="openCadastroPacienteModal()" title="Cadastrar na clínica ou vincular titular do app">+ Incluir usuário</button>
         <div class="notif-btn" id="notifBtn">🔔<div class="notif-dot"></div></div>
       </div>
     </div>
@@ -59,7 +60,6 @@
         <div class="metrics-row" id="metricsRowPac"></div>
         <div class="main-grid">
           <div class="panel" id="patientPanelFull"></div>
-          <div class="side-col" id="sideCol"></div>
         </div>
       </div>
       <div class="page" id="page-detalhe"><div id="detalheContent"></div></div>
@@ -98,12 +98,17 @@
   <div class="modal modal-hist-med" id="histMedModalRoot" onclick="event.stopPropagation()"></div>
 </div>
 
+<!-- MODAL INCLUIR DADO (consultoria / consultório) -->
+<div class="modal-overlay" id="incluirDadoOverlay" onclick="if(event.target===this)closeIncluirDadoModal()">
+  <div class="modal modal-incluir-dado" id="incluirDadoModalRoot" onclick="event.stopPropagation()"></div>
+</div>
+
 <!-- MODAL CADASTRO DE PACIENTE -->
 <div class="modal-overlay cad-pac-overlay" id="cadPacOverlay" onclick="if(event.target===this)closeCadastroPacienteModal()">
   <div class="modal modal-cad-pac" id="cadPacModalRoot" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div>
-        <div class="modal-title" id="cadPacModalTitle">Incluir paciente</div>
+        <div class="modal-title" id="cadPacModalTitle">Incluir usuário</div>
         <div style="font-size:12px;color:var(--muted);margin-top:4px" id="cadPacModalSub">Cadastro na clínica ou vínculo com titular do app (demo — dados só neste navegador).</div>
       </div>
       <button type="button" class="modal-close" onclick="closeCadastroPacienteModal()" aria-label="Fechar"></button>
@@ -165,7 +170,7 @@
           </select>
         </div>
         <div class="cad-pac-field cad-pac-field--full">
-          <label>Foto do paciente (opcional)</label>
+          <label>Foto do usuário (opcional)</label>
           <div class="cad-pac-foto-row">
             <img id="cadPacFotoPreview" class="cad-pac-foto-preview" style="display:none" alt="">
             <div class="cad-pac-foto-actions">
@@ -177,10 +182,10 @@
           <span class="cad-pac-hint">Aparece na lista, agenda e painel para o médico reconhecer o rosto (nesta demo fica só no navegador).</span>
         </div>
         <div class="cad-pac-field cad-pac-field--full" style="margin-top:4px;padding-top:16px;border-top:1px solid var(--border)">
-          <div class="cad-pac-section-title">App do paciente · sincronizado com a clínica</div>
+          <div class="cad-pac-section-title">App do usuário · sincronizado com a clínica</div>
           <label class="cad-pac-check">
             <input type="checkbox" id="cadPacSyncApp" checked>
-            <span>Criar <strong>usuário</strong> e <strong>senha provisória</strong> no app — no 1º acesso o paciente define nova senha e a conta fica vinculada a este cadastro.</span>
+            <span>Criar <strong>usuário</strong> e <strong>senha provisória</strong> no app — no 1º acesso o usuário define nova senha e a conta fica vinculada a este cadastro.</span>
           </label>
           <label class="cad-pac-check">
             <input type="checkbox" id="cadPacWaConvite" checked>
@@ -193,7 +198,7 @@
         <div class="cad-pac-field cad-pac-field--full">
           <div class="cad-pac-section-title" style="margin-bottom:8px">Titular já existe só no app</div>
           <p class="cad-pac-hint" style="margin-bottom:12px">
-            O titular gera um <strong>código de vínculo</strong> no app. A clínica não vê nome, e-mail ou sinais até o titular <strong>aprovar</strong> o pedido no celular. Nesta demo você pode simular a aprovação no perfil do paciente.
+            O titular gera um <strong>código de vínculo</strong> no app. A clínica não vê nome, e-mail ou sinais até o titular <strong>aprovar</strong> o pedido no celular. Nesta demo você pode simular a aprovação no perfil do usuário.
           </p>
         </div>
         <div class="cad-pac-field cad-pac-field--full">
@@ -208,7 +213,7 @@
       </div>
       <div class="cad-pac-footer" id="cadPacFooterForm">
         <button type="button" class="btn-outline" onclick="closeCadastroPacienteModal()">Cancelar</button>
-        <button type="submit" class="btn-primary" id="cadPacSubmitBtn">Cadastrar paciente</button>
+        <button type="submit" class="btn-primary" id="cadPacSubmitBtn">Cadastrar usuário</button>
       </div>
     </form>
     <div class="cad-pac-sucesso" id="cadPacSucesso" style="display:none">
