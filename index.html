@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeepSaude — Painel Clínico</title>
+<title>TeepSaude</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/dashboard.css">
@@ -11,9 +11,9 @@
 <body><div id="loginScreen" class="login-screen" style="display:none">
   <div class="login-card">
     <div class="login-logo-wrap">
-      <img class="login-logo-img" src="logo.png" alt="TeepSaude" width="320" height="120">
+      <img class="login-logo-img" src="./logo.png" alt="" width="320" height="120" onerror="tryLogoFallback(this)">
     </div>
-    <p class="login-sub">Painel clínico — demonstração</p>
+    <form class="login-form" onsubmit="event.preventDefault(); tentarLogin();">
     <div class="login-field">
       <label for="loginUsuario">Usuário</label>
       <input type="text" id="loginUsuario" autocomplete="username" placeholder="saude@teep.com.br" />
@@ -24,9 +24,9 @@
     </div>
     <p id="loginErro" class="login-erro" style="display:none"></p>
     <div class="login-actions">
-      <button type="button" class="btn-primary login-btn-full" onclick="tentarLogin('clinica')">Entrar como Clínica</button>
-      <button type="button" class="btn-outline login-btn-full" onclick="tentarLogin('medico')">Entrar como Médico</button>
+      <button type="submit" class="btn-primary login-btn-full">Entrar</button>
     </div>
+    </form>
     <p class="login-foot">Acesso: <strong>saude@teep.com.br</strong> / <strong>teepsaude</strong></p>
   </div>
 </div><div id="appLayout" style="display:none">
