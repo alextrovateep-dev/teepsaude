@@ -1830,17 +1830,14 @@ button.metric-card:focus-visible {
 .login-logo-img {
   display: block;
   width: 100%;
-  max-width: 320px;
+  max-width: 360px;
   height: auto;
-  max-height: 100px;
+  max-height: 140px;
   object-fit: contain;
+  border-radius: 10px;
+  background: var(--bg);
 }
-.login-sub {
-  text-align: center;
-  font-size: 13px;
-  color: var(--muted);
-  margin: 8px 0 20px;
-}
+.login-form { margin-top: 16px; }
 .login-field {
   margin-bottom: 14px;
 }
