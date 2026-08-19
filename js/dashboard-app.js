@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════
    AI MODULE — TeepSaude
    A chave de API fica em sessionStorage['teep_ai_key'].
    Configure em: Configurações → IA / API Key.
@@ -49,7 +49,7 @@ async function organizarSOAP(pacienteId) {
 
   const p = pacientes.find(x => x.id === pacienteId);
   const ctx = p
-    ? `Paciente: ${p.nome}, ${p.idade} anos, ${p.sexo === 'F' ? 'feminino' : 'masculino'}. Condições: ${p.condicoes}. Medicações: ${(p.meds || []).join(', ') || 'nenhuma'}.`
+    ? `Usuário: ${p.nome}, ${p.idade} anos, ${p.sexo === 'F' ? 'feminino' : 'masculino'}. Condições: ${p.condicoes}. Medicações: ${(p.meds || []).join(', ') || 'nenhuma'}.`
     : '';
 
   btn.disabled = true; btn.textContent = '⏳ Aguarde…';
@@ -75,7 +75,7 @@ async function gerarTextoAtestadoIA() {
   if (!ta || !btn) return;
   const pid = atestadoPacienteId;
   const p   = pid != null ? pacientes.find(x => x.id === pid) : null;
-  if (!p) { alert('Paciente não encontrado.'); return; }
+  if (!p) { alert('Usuário não encontrado.'); return; }
 
   const ultimaAnotacao = (p.anotacoesConsultas && p.anotacoesConsultas[0] && p.anotacoesConsultas[0].texto) || '';
 
@@ -86,7 +86,7 @@ async function gerarTextoAtestadoIA() {
 O texto deve ser curto (2-4 linhas), objetivo, linguagem clínica formal.
 NÃO inclua cabeçalho, assinatura, CRM, dados da clínica nem campos de formulário.
 Retorne apenas o texto que vai no campo "Atesto que:".`,
-      `Paciente: ${p.nome}, ${p.idade} anos, ${p.sexo === 'F' ? 'feminino' : 'masculino'}.
+      `Usuário: ${p.nome}, ${p.idade} anos, ${p.sexo === 'F' ? 'feminino' : 'masculino'}.
 Condições: ${p.condicoes}. Medicações: ${(p.meds || []).join(', ') || 'nenhuma'}.
 Anotação clínica mais recente: ${ultimaAnotacao || 'não disponível'}.
 Gere o texto do atestado.`
@@ -115,7 +115,7 @@ async function sugerirReceitaIA() {
 Retorne APENAS um array JSON válido, sem markdown, sem explicações, no formato exato:
 [{"med":"Nome DCB e concentração","dos":"Dosagem","freq":"Frequência","dias":30,"inst":"Instruções opcionais"}]
 Máximo 4 itens. Use nomes genéricos (DCB). Se não houver dados suficientes, retorne [].`,
-      `Paciente: ${p.nome}, ${p.idade} anos, ${p.sexo === 'F' ? 'feminino' : 'masculino'}.
+      `Usuário: ${p.nome}, ${p.idade} anos, ${p.sexo === 'F' ? 'feminino' : 'masculino'}.
 Condições: ${p.condicoes}. Medicações atuais: ${(p.meds || []).join(', ') || 'nenhuma'}.
 Anotação desta consulta: ${ultimaAnotacao || 'não disponível'}.`
     );
@@ -176,12 +176,12 @@ async function interpretarExameIA(exameId, pacienteId) {
   btn.disabled = true; btn.textContent = '⏳ Aguarde…';
   try {
     const res = await chamarIA(
-      `Você é um assistente de apoio clínico. Dado um exame e o contexto do paciente, produza um parágrafo (3-5 linhas) de interpretação contextual em português.
+      `Você é um assistente de apoio clínico. Dado um exame e o contexto do usuário, produza um parágrafo (3-5 linhas) de interpretação contextual em português.
 Não faça diagnóstico definitivo. Use linguagem clínica acessível ao médico.
 Mencione se o resultado está dentro ou fora do esperado dadas as condições. Compare com anteriores se houver.
 Finalize sugerindo ação de acompanhamento se pertinente.`,
       `Exame: ${exame.nome} (${exame.tipo}). Data: ${exame.data}. Prioridade: ${exame.prioridade}. Status: ${exame.statusFluxo}.
-Paciente: ${p.nome}, ${p.idade} anos. Condições: ${p.condicoes}. Medicações: ${(p.meds || []).join(', ') || 'nenhuma'}.
+Usuário: ${p.nome}, ${p.idade} anos. Condições: ${p.condicoes}. Medicações: ${(p.meds || []).join(', ') || 'nenhuma'}.
 Sinais vitais: PA ${p.pressao}, FC ${p.fc || '—'}, SpO₂ ${p.saturacao || '—'}, Glicemia ${p.glicemia || '—'}.
 Exames anteriores do mesmo tipo: ${anteriores}.`
     );
@@ -194,7 +194,7 @@ Exames anteriores do mesmo tipo: ${anteriores}.`
   }
 }
 
-/* ── Feature 5: Chat com histórico do paciente ── */
+/* ── Feature 5: Chat com histórico do usuário ── */
 function htmlChatPacienteWidget(p) {
   const primeiroNome = p.nome.split(' ')[0];
   return `<div class="ia-chat-widget" id="iaChatWidget_${p.id}">
@@ -283,7 +283,7 @@ async function enviarMensagemChatPaciente(pacienteId) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 512,
-        system: `Você é um assistente clínico de apoio ao médico. Responda perguntas sobre o paciente com base nos dados abaixo.
+        system: `Você é um assistente clínico de apoio ao médico. Responda perguntas sobre o usuário com base nos dados abaixo.
 Seja direto e use linguagem médica. Nunca faça diagnóstico definitivo.
 Se a informação não estiver nos dados, diga explicitamente.
 DADOS DO PACIENTE (JSON):\n${ctx}`,
@@ -376,7 +376,7 @@ async function analisarTendenciasIA(pacienteId) {
 Responda com no máximo 5 bullet points (use "•"). Seja específico (cite dados, datas ou frequências). Priorize eventos críticos e padrões repetitivos.
 Se não houver tendência preocupante, diga explicitamente que os dados recentes estão dentro do esperado.
 Não faça diagnóstico. Esta análise é de apoio ao médico.`,
-      `Paciente: ${p.nome}, ${p.idade} anos. Condições: ${p.condicoes}.
+      `Usuário: ${p.nome}, ${p.idade} anos. Condições: ${p.condicoes}.
 Registros (mais recentes primeiro):
 ${historico.map(h => `[${h.data}] ${h.tipo === 'red' ? '🔴' : h.tipo === 'amber' ? '🟡' : '🟢'} ${h.msg}`).join('\n')}`
     );
@@ -541,7 +541,7 @@ let receitaPacienteId = null;
 let medicoModalEdicaoId = null;
 /** Página dedicada «Consulta em andamento» (clínica e médico) */
 let consultaAtivaPacienteId = null;
-/** Paciente com consulta aberta (mantém contexto ao ir ao perfil / exames / medicação) */
+/** Usuário com consulta aberta (mantém contexto ao ir ao perfil / exames / medicação) */
 let consultaContextoPacienteId = null;
 /** Etapa atual do fluxo: anotacao | receita | atestado | exames | medicacao | perfil */
 let consultaEtapaAtiva = 'anotacao';
@@ -556,7 +556,7 @@ const CONSULTA_ETAPAS_FLUXO = [
   { key: 'receita', icon: '💊', label: 'Receita', title: 'Emitir prescrição sem encerrar o atendimento' },
   { key: 'atestado', icon: '📄', label: 'Atestado', title: 'Gerar atestado médico' },
   { key: 'exames', icon: '🧪', label: 'Exames', title: 'Solicitar ou registrar exames' },
-  { key: 'medicacao', icon: '💉', label: 'Medicação', title: 'Adicionar medicação que o paciente tomará' },
+  { key: 'medicacao', icon: '💉', label: 'Medicação', title: 'Adicionar medicação que o usuário tomará' },
 ];
 
 const SESSAO_STORAGE_KEY = 'teepsaude_session';
@@ -639,8 +639,8 @@ function painelEntradasVisiveis() {
 }
 
 const pageTitles = {
-  pacientes:'Carteira de pacientes',
-  detalhe:'Perfil do paciente', alertas:'Análise de alertas',
+  pacientes:'',
+  detalhe:'Perfil do usuário', alertas:'Análise de alertas',
   agenda:'Agenda', painel:'Painel de atendimento', consulta:'Consulta em andamento',  examesSolicitacoes:'Solicitações de Exames',
   examesResultados:'Resultados de Exames',
   medicacoes:'Medicações', medicos:'Equipe médica', configuracoes:'Configurações',
@@ -673,8 +673,9 @@ function navigateTo(page, extra) {
   if (page !== 'detalhe' && page !== paginaAtiva) filtroAtivo = 'todos';
   paginaAnterior = paginaAtiva;
   let pageEfetiva = page;
-  if (page === 'medicos' && sessaoMedicoId() != null) pageEfetiva = 'pacientes';
-  if (page === 'painel' && sessaoMedicoId() != null) pageEfetiva = 'agenda';
+  if (page === 'medicos') pageEfetiva = 'pacientes';
+  if (page === 'agenda') pageEfetiva = 'pacientes';
+  if (page === 'painel' && sessaoMedicoId() != null) pageEfetiva = 'pacientes';
   if (page === 'examesSolicitacoes' && sessaoMedicoId() != null) pageEfetiva = 'examesResultados';
   if (page === 'exames' && sessaoMedicoId() != null) pageEfetiva = 'examesResultados';
   if (page === 'exames' && sessaoEhClinica()) pageEfetiva = 'examesSolicitacoes';
@@ -682,7 +683,7 @@ function navigateTo(page, extra) {
     const pid = extra != null ? Number(extra) : NaN;
     const pCons = pacientes.find(x => x.id === pid);
     if (!Number.isFinite(pid) || !consultaSessaoIniciada(pCons)) {
-      pageEfetiva = Number.isFinite(pid) ? 'detalhe' : (sessaoMedicoId() != null ? 'agenda' : 'pacientes');
+      pageEfetiva = Number.isFinite(pid) ? 'detalhe' : 'pacientes';
       if (Number.isFinite(pid)) extra = pid;
     } else {
       consultaAtivaPacienteId = pid;
@@ -692,21 +693,25 @@ function navigateTo(page, extra) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-' + pageEfetiva);
   if (target) target.classList.add('active');
-  document.getElementById('topbarTitle').textContent = pageTitles[pageEfetiva] || pageEfetiva;
+  const titleEl = document.getElementById('topbarTitle');
+  const titleTxt = Object.prototype.hasOwnProperty.call(pageTitles, pageEfetiva)
+    ? pageTitles[pageEfetiva]
+    : pageEfetiva;
+  titleEl.textContent = titleTxt;
+  titleEl.style.display = titleTxt ? '' : 'none';
   const showSearch = pageEfetiva === 'pacientes';
   document.getElementById('searchBoxWrap').style.display = showSearch ? 'flex' : 'none';
+  const incluirBtn = document.getElementById('topbarIncluirBtn');
+  if (incluirBtn) incluirBtn.style.display = showSearch ? '' : 'none';
   const searchInp = document.getElementById('searchInput');
-  if (searchInp && pageEfetiva === 'pacientes') searchInp.placeholder = 'Buscar na carteira';
+  if (searchInp && pageEfetiva === 'pacientes') searchInp.placeholder = 'Buscar';
   renderSidebar();
   if (pageEfetiva === 'pacientes')   renderPacientesPage();
   if (pageEfetiva === 'detalhe') {
     pacienteDetalheId = extra;
     renderDetalhePage(extra);
   }
-  if (pageEfetiva === 'agenda') {
-    if (!licencaConsultaAtiva()) document.getElementById('agendaPage').innerHTML = htmlModuloConsultaBloqueado();
-    else renderAgendaPage();
-  }
+  if (pageEfetiva === 'agenda')      renderAgendaPage();
   if (pageEfetiva === 'painel') {
     if (!licencaConsultaAtiva()) document.getElementById('painelPage').innerHTML = htmlModuloConsultaBloqueado();
     else renderPainelPage();
@@ -760,13 +765,11 @@ function resolveNavBadge(item) {
 function renderSidebar() {
   const el = document.getElementById('sidebar');
   const sess = getSessao();
-  const navClinicaVisivel = sess && sessaoEhMedico()
-    ? navClinica.filter(x => x.page !== 'medicos')
-    : navClinica;
+  const navClinicaVisivel = navClinica;
   const navPrincipalVisivel = (() => {
     let nav = navPrincipal;
     if (sess && sessaoEhMedico()) nav = nav.filter(x => x.page !== 'painel');
-    if (!licencaConsultaAtiva()) nav = nav.filter(x => x.page !== 'painel' && x.page !== 'agenda');
+    if (!licencaConsultaAtiva()) nav = nav.filter(x => x.page !== 'painel');
     return nav;
   })();
   const navItem = item => {
@@ -805,13 +808,10 @@ function renderSidebar() {
       </div>
       <div class="sidebar-logo-text">
         <div class="logo-name">${dadosClinica.nome}</div>
-        <div class="logo-sub">Painel Clínico</div>
       </div>
     </div>
     <div class="nav-section-label">Principal</div>
     ${navPrincipalVisivel.map(navItem).join('')}
-    <div class="nav-section-label">Análise</div>
-    ${navAnaliseParaSessao().map(navItem).join('')}
     <div class="nav-section-label">Clínica</div>
     ${navClinicaVisivel.map(navItem).join('')}
     <div class="sidebar-profile">
@@ -839,31 +839,20 @@ function metricsHtml(el) {
   el.innerHTML = `
     <div class="metric-card ${isActive('todos')}" onclick="setFiltroCard('todos')">
       <div class="metric-accent" style="background:var(--purple)"></div>
-      <div class="metric-label">Total pacientes</div>
+      <div class="metric-label">Total usuários</div>
       <div class="metric-value">${m.total}</div>
-      <div class="metric-sub">? <span class="up">+5</span> este mês</div>
+      <div class="metric-sub"><span class="up">+5</span> este mês</div>
     </div>
     <div class="metric-card ${isActive('critico')}" onclick="setFiltroCard('critico')">
       <div class="metric-accent" style="background:var(--red)"></div>
       <div class="metric-label">Críticos agora</div>
       <div class="metric-value" style="color:var(--red)">${m.criticos}</div>
       <div class="metric-sub"><span class="up">Requerem atenção</span></div>
-    </div>
-    <div class="metric-card ${isActive('atencao')}" onclick="setFiltroCard('atencao')">
-      <div class="metric-accent" style="background:var(--amber)"></div>
-      <div class="metric-label">Em observação</div>
-      <div class="metric-value" style="color:var(--amber)">${m.atencao}</div>
-      <div class="metric-sub">Parâmetro fora do ideal</div>
-    </div>
-    <div class="metric-card ${isActive('estavel')}" onclick="setFiltroCard('estavel')">
-      <div class="metric-accent" style="background:var(--green)"></div>
-      <div class="metric-label">Estáveis</div>
-      <div class="metric-value" style="color:var(--green)">${m.estaveis}</div>
-      <div class="metric-sub"><span class="down">${m.pct}%</span> da carteira</div>
     </div>`;
 }
 
 function setFiltroCard(filtro) {
+  if (filtro !== 'todos' && filtro !== 'critico') filtro = 'todos';
   filtroAtivo = filtroAtivo === filtro ? 'todos' : filtro;
   renderPacientesPage();
 }
@@ -972,7 +961,6 @@ function onPerfilFotoSelecionada(pacienteId, ev) {
     if (paginaAtiva === 'pacientes') renderPacientesPage();
     if (paginaAtiva === 'agenda') renderAgendaPage();
     if (paginaAtiva === 'painel') renderPainelPage();
-    renderSideCol();
     renderDetalhePage(pacienteId);
   };
   reader.readAsDataURL(f);
@@ -985,7 +973,6 @@ function removerFotoPaciente(pacienteId) {
   if (paginaAtiva === 'pacientes') renderPacientesPage();
   if (paginaAtiva === 'agenda') renderAgendaPage();
   if (paginaAtiva === 'painel') renderPainelPage();
-  renderSideCol();
   renderDetalhePage(pacienteId);
 }
 
@@ -1032,7 +1019,7 @@ function adicionarExamePerfilPaciente(pacienteId) {
     };
     garantirExameArquivoCompartilhamento(novoArq, pacienteId);
     p.examesArquivos.unshift(novoArq);
-    const quem = origem === 'paciente' ? 'Paciente (app/recepção)' : 'Clínica';
+    const quem = origem === 'paciente' ? 'Usuário (app/recepção)' : 'Clínica';
     p.historico.unshift({
       data: dataHist,
       tipo: 'green',
@@ -1067,8 +1054,6 @@ function abrirExamePacienteNovaAba(pacienteId, exameId) {
 
 let filtroAtivo = 'todos';
 let termoBusca  = '';
-/** Filtro da coluna de alertas em Pacientes: todos | critico | aviso */
-let alertasSideFiltro = 'todos';
 
 /** ExamModule  filtros solicitações (clínica) */
 let examSolicFiltroStatus = 'todos';
@@ -1177,7 +1162,7 @@ function examesResultadosLista() {
         tipo: e.tipo,
         data: ax.dataRegistro || e.data,
         dataIso: e.dataIso,
-        origem: e.origem === 'paciente' ? 'App do paciente' : 'Clínica',
+        origem: e.origem === 'paciente' ? 'App do usuário' : 'Clínica',
         anexo: ax,
       });
     });
@@ -1202,7 +1187,7 @@ function examesResultadosLista() {
         tipo: 'Anexo',
         data: arq.dataRegistro,
         dataIso: null,
-        origem: arq.origem === 'paciente' ? 'App do paciente' : 'Clínica / ficha',
+        origem: arq.origem === 'paciente' ? 'App do usuário' : 'Clínica / ficha',
         anexo: arq,
       });
     });
@@ -1289,7 +1274,7 @@ function patientRowHtml(p, showMsg) {
     : `<span class="vital-badge ${p.paColor}">${p.pressao}</span>`;
   const actions = showMsg
     ? `<div class="row-actions">
-        <button class="msg-btn" onclick="event.stopPropagation();openMsgModal(${p.id})" title="Enviar mensagem ao paciente">Mensagem</button>
+        <button class="msg-btn" onclick="event.stopPropagation();openMsgModal(${p.id})" title="Enviar mensagem ao usuário">Mensagem</button>
         <button class="action-btn" onclick="event.stopPropagation();openDetalhe(${p.id})" title="Ver dados e histórico — não inicia atendimento">Analisar ficha</button>
        </div>`
     : `<button class="action-btn" onclick="event.stopPropagation();openDetalhe(${p.id})" title="Ver dados e histórico — não inicia atendimento">Analisar ficha</button>`;
@@ -1311,7 +1296,7 @@ function patientRowHtml(p, showMsg) {
 function tableHeaderHtml() {
   return `<div class="patient-row header-row">
     <div></div>
-    <div class="col-label">Paciente</div>
+    <div class="col-label">Usuário</div>
     <div class="col-label">Pressão</div>
     <div class="col-label col-med">Medicação</div>
     <div class="col-label col-last">Último reg.</div>
@@ -1364,7 +1349,7 @@ function setCadPacModo(modo) {
     blocoC.style.display = cadPacModo === 'cadastro' ? 'grid' : 'none';
     blocoV.style.display = cadPacModo === 'vinculo' ? 'grid' : 'none';
   }
-  if (btn) btn.textContent = cadPacModo === 'vinculo' ? 'Solicitar vínculo' : 'Cadastrar paciente';
+  if (btn) btn.textContent = cadPacModo === 'vinculo' ? 'Solicitar vínculo' : 'Cadastrar usuário';
   const focusId = cadPacModo === 'vinculo' ? 'cadPacCodigoVinculo' : 'cadPacNome';
   const fe = document.getElementById(focusId);
   if (fe && document.getElementById('cadPacOverlay')?.classList.contains('open')) fe.focus();
@@ -1396,7 +1381,7 @@ function mostrarTelaSucessoVinculo(novo) {
     <div class="cad-pac-sucesso-box">
       <div><strong>Código usado:</strong> <code>${esc(v.codigoInformado)}</code></div>
       <div style="margin-top:10px;font-size:12px;color:var(--muted)">
-        Abra o perfil deste paciente e use <strong>Simular aceite no app (demo)</strong> para liberar nome, contato e sinais  como se o titular tivesse aprovado no celular.
+        Abra o perfil deste usuário e use <strong>Simular aceite no app (demo)</strong> para liberar nome, contato e sinais  como se o titular tivesse aprovado no celular.
       </div>
     </div>`;
 }
@@ -1483,7 +1468,7 @@ function simularAceiteVinculoApp(pacienteId) {
   const code = p.vinculoApp.codigoInformado;
   const entry = DEMO_CODIGOS_VINCULO[code];
   if (!entry) {
-    alert('Código de demo não encontrado para este paciente.');
+    alert('Código de demo não encontrado para este usuário.');
     return;
   }
   const patch = entry.dadosPosAceite();
@@ -1583,7 +1568,7 @@ function mostrarTelaSucessoCadastroPaciente(novo, syncApp) {
   const formEl = document.getElementById('cadPacForm');
   const okEl = document.getElementById('cadPacSucesso');
   const body = document.getElementById('cadPacSucessoBody');
-  document.getElementById('cadPacModalTitle').textContent = 'Paciente cadastrado';
+  document.getElementById('cadPacModalTitle').textContent = 'Usuário cadastrado';
   document.getElementById('cadPacModalSub').textContent = syncApp && novo.app
     ? 'Usuário do app criado na clínica  senha provisória e troca obrigatória no 1º acesso.'
     : 'Registro salvo na carteira.';
@@ -1616,7 +1601,7 @@ function mostrarTelaSucessoCadastroPaciente(novo, syncApp) {
 function openCadastroPacienteModal() {
   const formEl = document.getElementById('cadPacForm');
   const okEl = document.getElementById('cadPacSucesso');
-  document.getElementById('cadPacModalTitle').textContent = 'Incluir paciente';
+  document.getElementById('cadPacModalTitle').textContent = 'Incluir usuário';
   document.getElementById('cadPacModalSub').textContent =
     'Cadastre na clínica ou vincule um titular que já usa o app (demonstração  dados só neste navegador).';
   formEl.style.display = 'flex';
@@ -1720,7 +1705,7 @@ function submitCadastroPaciente() {
     ultimaConsulta: '',
     proximaConsulta: '',
     historico: [
-      { data: dataHist, tipo: 'green', msg: 'Paciente cadastrado na carteira.' },
+      { data: dataHist, tipo: 'green', msg: 'Usuário cadastrado na carteira.' },
     ],
     msgs: [],
     anotacoesConsultas: [],
@@ -1751,91 +1736,22 @@ function submitCadastroPaciente() {
   mostrarTelaSucessoCadastroPaciente(novo, syncApp);
 }
 
-function renderSideCol() {
-  const sideRoot = document.getElementById('sideCol');
-  if (!sideRoot) return;
-  const permitidos = pacientesPermitidosIdsSessao();
-  let alertasBase = alertas.filter(a => a.ativo);
-  if (permitidos) alertasBase = alertasBase.filter(a => permitidos.has(a.pacienteId));
-  if (alertasSideFiltro === 'critico') alertasBase = alertasBase.filter(a => a.severity === 'red');
-  if (alertasSideFiltro === 'aviso') alertasBase = alertasBase.filter(a => a.severity === 'amber');
-  alertasBase.sort((a, b) => alertaTimestamp(b) - alertaTimestamp(a));
-  const totalAtivos = alertas.filter(a => a.ativo && (!permitidos || permitidos.has(a.pacienteId))).length;
-  const criticosN = alertas.filter(a => a.ativo && (!permitidos || permitidos.has(a.pacienteId)) && a.severity === 'red').length;
-  const avisosN = alertas.filter(a => a.ativo && (!permitidos || permitidos.has(a.pacienteId)) && a.severity === 'amber').length;
-  const chip = (f, label, n) => {
-    const on = alertasSideFiltro === f ? ' alertas-side-chip--on' : '';
-    return `<button type="button" class="alertas-side-chip${on}" onclick="setAlertasSideFiltro('${f}')">${label}${n != null ? ` (${n})` : ''}</button>`;
-  };
-  const alertasHtml = alertasBase.length
-    ? alertasBase.map(sideAlertItemHtml).join('')
-    : '<div class="alertas-side-empty">Nenhum alerta neste filtro.</div>';
-
-  const agendaSlice = filtrarSlotsAgenda([...agendaHoje].sort((a, b) => a.hora.localeCompare(b.hora))).slice(0, 5);
-  const agendaHtml = agendaSlice.map(c => {
-    const pac = (c.pacienteId && pacientes.find(x => x.id === c.pacienteId)) || pacientes.find(x => x.nome === c.paciente);
-    const avatarEl = pac
-      ? `<div style="flex-shrink:0">${patientAvatarHtml(pac, 28, 10)}</div>`
-      : `<div class="schedule-time">${c.hora}</div>`;
-    const med = c.medico || medico.nome;
-    const open = pac ? `onclick="openDetalhe(${pac.id})"` : '';
-    return `
-    <div class="schedule-item" ${open} style="${pac ? 'cursor:pointer' : ''}">
-      ${avatarEl}
-      <div style="flex:1;min-width:0">
-        <div class="schedule-name">${c.paciente}</div>
-        <div class="schedule-type">${c.hora} · ${med}</div>
-        <div class="schedule-kind">${c.tipo}</div>
-      </div>
-      <div class="schedule-dot" style="background:${c.dotColor}"></div>
-    </div>`;
-  }).join('');
-
-  sideRoot.innerHTML = `
-    <div class="panel panel-alertas-side">
-      <div class="panel-header">
-        <div>
-          <div class="panel-title">Alertas</div>
-          <div style="font-size:10px;color:var(--muted)">${totalAtivos} ativo(s) · clique na linha para o perfil</div>
-        </div>
-      </div>
-      <div class="alertas-side-chips">${chip('todos', 'Todos', totalAtivos)}${chip('critico', 'Críticos', criticosN)}${chip('aviso', 'Avisos', avisosN)}</div>
-      <div class="alertas-side-list">${alertasHtml}</div>
-    </div>
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">Agenda de hoje</div>
-        <div style="font-size:10px;color:var(--purple);font-weight:500;cursor:pointer" onclick="navigateTo('agenda')">Ver completa ?</div>
-      </div>
-      ${agendaHtml}
-    </div>`;
-}
-
 /* -- PÁGINA PACIENTES (lista completa) -- */
 function renderPacientesPage() {
+  if (filtroAtivo !== 'todos' && filtroAtivo !== 'critico') filtroAtivo = 'todos';
   metricsHtml(document.getElementById('metricsRowPac'));
   const lista = getList();
   const rows = lista.length
     ? lista.map(p => patientRowHtml(p, false)).join('')
-    : `<div class="empty-state">Nenhum paciente encontrado.</div>`;
+    : `<div class="empty-state">Nenhum usuário encontrado.</div>`;
   document.getElementById('patientPanelFull').innerHTML = `
-    <div class="panel-header">
-      <div class="pacientes-header-actions" style="width:100%;justify-content:space-between">
-        <div style="min-width:0">
-          <div class="panel-title">Carteira  ${pacientesDaSessao().length} paciente(s) nesta visão</div>
-          <div class="pacientes-page-hint">Pressão, medicação e risco na lista. À direita: todos os alertas (com filtros) e a agenda de hoje.</div>
-        </div>
-        <button type="button" class="btn-primary" style="white-space:nowrap;flex-shrink:0" onclick="openCadastroPacienteModal()" title="Cadastrar na clínica ou vincular titular do app">+ Incluir paciente</button>
-      </div>
-    </div>
     <div class="patient-table">
       ${tableHeaderHtml()}
       ${rows}
     </div>`;
-  renderSideCol();
 }
 
-/* -- PÁGINA DETALHE (perfil completo do paciente) -- */
+/* -- PÁGINA DETALHE (perfil completo do usuário) -- */
 let detalheCategoria = 'saude';
 
 /* -- Modal: histórico de medições (demo  série sintética estável por paciente + chave) -- */
@@ -1932,6 +1848,7 @@ function gerarSerieSaudeCorpo(p, aba, key) {
   const now = Date.now();
   const dayMs = 86400000;
   const out = [];
+  const extra = pontosConsultoria(p.id, aba, key);
   for (let i = n - 1; i >= 0; i--) {
     const wave = Math.sin(i / 5 + p.id * 0.2) * 0.35 + Math.sin(i / 13) * 0.2;
     const noise = (rnd() - 0.5) * 2;
@@ -1957,7 +1874,154 @@ function gerarSerieSaudeCorpo(p, aba, key) {
       out.push({ t, fonte, display: `${String(v).replace('.', ',')}${suf}`, v });
     }
   }
-  return out;
+  return extra.concat(out).sort((a, b) => a.t - b.t);
+}
+
+/** Demo: medições inseridas na consultoria (fonte consultório). */
+const medicoesConsultoria = {};
+let incluirDadoState = { pacienteId: null, aba: 'saude', key: null };
+
+function chaveConsultoria(pid, aba, key) {
+  return `${pid}:${aba}:${key}`;
+}
+
+function pontosConsultoria(pid, aba, key) {
+  return medicoesConsultoria[chaveConsultoria(pid, aba, key)] || [];
+}
+
+function agoraInputDatetimeLocal() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+
+function openIncluirDadoModal(pacienteId, aba, key, ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  const p = pacientes.find(x => x.id === pacienteId);
+  const meta = aba === 'corpo' ? MEDICAO_META_CORPO[key] : MEDICAO_META_SAUDE[key];
+  const overlay = document.getElementById('incluirDadoOverlay');
+  const root = document.getElementById('incluirDadoModalRoot');
+  if (!p || !meta || !overlay || !root) return;
+  incluirDadoState = { pacienteId, aba, key };
+  const pa = meta.kind === 'pa';
+  const campos = pa
+    ? `<div class="incluir-dado-row">
+        <div class="cad-pac-field">
+          <label for="incluirDadoSys">Sistólica</label>
+          <input type="number" id="incluirDadoSys" min="70" max="250" step="1" placeholder="120">
+        </div>
+        <div class="cad-pac-field">
+          <label for="incluirDadoDia">Diastólica</label>
+          <input type="number" id="incluirDadoDia" min="40" max="150" step="1" placeholder="80">
+        </div>
+      </div>`
+    : `<div class="cad-pac-field">
+        <label for="incluirDadoValor">Valor${meta.suffix ? ` (${meta.suffix.trim()})` : ''}</label>
+        <input type="number" id="incluirDadoValor" step="${key === 'passos' ? '1' : '0.1'}" placeholder="Informe o valor">
+      </div>`;
+  root.innerHTML = `
+    <div class="hist-med-head">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div>
+          <div class="hist-med-title">Incluir dados</div>
+          <div class="hist-med-sub">${meta.title} · ${p.nome}</div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeIncluirDadoModal()" aria-label="Fechar"></button>
+      </div>
+    </div>
+    <div class="incluir-dado-body">
+      <p class="incluir-dado-hint">Entrada de <strong>consultoria</strong> (consultório). O app continua podendo enviar a mesma medição automaticamente.</p>
+      ${campos}
+      <div class="cad-pac-field">
+        <label for="incluirDadoQuando">Data e hora</label>
+        <input type="datetime-local" id="incluirDadoQuando" value="${agoraInputDatetimeLocal()}">
+      </div>
+    </div>
+    <div class="incluir-dado-footer">
+      <button type="button" class="btn-outline" onclick="closeIncluirDadoModal()">Cancelar</button>
+      <button type="button" class="btn-primary" onclick="salvarIncluirDado()">Salvar</button>
+    </div>`;
+  overlay.classList.add('open');
+}
+
+function closeIncluirDadoModal() {
+  const overlay = document.getElementById('incluirDadoOverlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function aplicarValorAtualConsultoria(p, aba, key, ponto) {
+  const fmt = n => String(n).replace('.', ',');
+  if (aba === 'saude') {
+    if (key === 'pressao') {
+      p.pressao = `${ponto.sys}/${ponto.dia}`;
+      p.paColor = paColorFromSysDia(ponto.sys, ponto.dia);
+    } else if (key === 'fc') p.fc = `${Math.round(ponto.v)} bpm`;
+    else if (key === 'glicemia') p.glicemia = `${Math.round(ponto.v)} mg/dL`;
+    else if (key === 'saturacao') p.saturacao = `${Math.round(ponto.v)}%`;
+    else if (key === 'temperatura') p.temperatura = `${fmt(ponto.v)}°C`;
+    else if (key === 'sono') p.sono = `${fmt(ponto.v)}h`;
+    else if (key === 'passos') p.passos = Math.round(ponto.v).toLocaleString('pt-BR');
+    else if (key === 'hrv') p.hrv = `${Math.round(ponto.v)}ms`;
+    else if (key === 'imc') p.imc = fmt(ponto.v);
+  } else {
+    if (!p.corpo) p.corpo = {};
+    if (!p.corpo.datas) p.corpo.datas = {};
+    if (!p.corpo.fontes) p.corpo.fontes = {};
+    const quando = formatDataHora(ponto.t);
+    const map = {
+      peso: () => { p.peso = `${fmt(ponto.v)}kg`; p.corpo.peso = p.peso; p.corpo.datas.peso = quando; p.corpo.fontes.peso = 'Consultoria'; },
+      imc: () => { p.imc = fmt(ponto.v); p.corpo.imc = p.imc; p.corpo.datas.imc = quando; p.corpo.fontes.imc = 'Consultoria'; },
+      gordura: () => { p.corpo.gorduraCorporal = `${fmt(ponto.v)}%`; p.corpo.datas.gordura = quando; p.corpo.fontes.gordura = 'Consultoria'; },
+      massaMusc: () => { p.corpo.massaMagra = `${fmt(ponto.v)} kg`; p.corpo.datas.massaMusc = quando; p.corpo.fontes.massaMusc = 'Consultoria'; },
+      cintura: () => { p.corpo.cintura = `${fmt(ponto.v)} cm`; p.corpo.datas.cintura = quando; p.corpo.fontes.cintura = 'Consultoria'; },
+      altura: () => { p.altura = `${fmt(ponto.v)}m`; p.corpo.altura = p.altura; p.corpo.datas.altura = quando; p.corpo.fontes.altura = 'Consultoria'; },
+    };
+    if (map[key]) map[key]();
+  }
+  p.ultimoReg = 'Agora';
+}
+
+function salvarIncluirDado() {
+  const { pacienteId, aba, key } = incluirDadoState;
+  const p = pacientes.find(x => x.id === pacienteId);
+  const meta = aba === 'corpo' ? MEDICAO_META_CORPO[key] : MEDICAO_META_SAUDE[key];
+  if (!p || !meta) return;
+  const quandoInp = document.getElementById('incluirDadoQuando');
+  const t = quandoInp && quandoInp.value ? new Date(quandoInp.value).getTime() : Date.now();
+  if (!Number.isFinite(t)) {
+    alert('Informe uma data e hora válidas.');
+    return;
+  }
+  let ponto;
+  if (meta.kind === 'pa') {
+    const sys = parseInt(document.getElementById('incluirDadoSys').value, 10);
+    const dia = parseInt(document.getElementById('incluirDadoDia').value, 10);
+    if (!Number.isFinite(sys) || !Number.isFinite(dia)) {
+      alert('Informe sistólica e diastólica.');
+      return;
+    }
+    ponto = { t, fonte: 'consultorio', display: `${sys}/${dia}`, sys, dia };
+  } else {
+    const v = parseFloat(String(document.getElementById('incluirDadoValor').value).replace(',', '.'));
+    if (!Number.isFinite(v)) {
+      alert('Informe o valor da medição.');
+      return;
+    }
+    const suf = meta.suffix || '';
+    ponto = { t, fonte: 'consultorio', display: `${String(v).replace('.', ',')}${suf}`, v };
+  }
+  const k = chaveConsultoria(pacienteId, aba, key);
+  if (!medicoesConsultoria[k]) medicoesConsultoria[k] = [];
+  medicoesConsultoria[k].unshift(ponto);
+  aplicarValorAtualConsultoria(p, aba, key, ponto);
+  if (!Array.isArray(p.historico)) p.historico = [];
+  p.historico.unshift({
+    data: formatDataHora(t),
+    tipo: 'green',
+    msg: `Consultoria: ${meta.title} ${ponto.display}${meta.kind === 'pa' ? ' mmHg' : ''}.`,
+  });
+  closeIncluirDadoModal();
+  if (paginaAtiva === 'detalhe') renderDetalhePage(pacienteId);
 }
 
 function gerarSerieMedicacao(p, medIndex) {
@@ -2236,7 +2300,10 @@ function renderCorpoHtml(p) {
       onclick="openMedicaoHistoricoModal(${p.id},'corpo','${metricKey}')"
       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMedicaoHistoricoModal(${p.id},'corpo','${metricKey}');}">
       <div class="detail-card-accent" style="background:${accent}"></div>
-      <div class="detail-card-label">${label}</div>
+      <div class="detail-card-top">
+        <div class="detail-card-label">${label}</div>
+        <button type="button" class="detail-card-add" onclick="openIncluirDadoModal(${p.id},'corpo','${metricKey}',event)">Incluir dados</button>
+      </div>
       <div class="detail-card-value" style="color:${color}">${value}</div>
       <div class="detail-card-sub">${subLinha(idealTxt, data, fonte)} · Toque para histórico</div>
     </div>`;
@@ -2261,7 +2328,7 @@ function renderCorpoHtml(p) {
 function openDetalhe(id) {
   const permitidos = pacientesPermitidosIdsSessao();
   if (permitidos && !permitidos.has(id)) {
-    alert('Nesta sessão você só acessa pacientes da sua agenda.');
+    alert('Nesta sessão você só acessa usuários da sua agenda.');
     return;
   }
   if (consultaContextoPacienteId !== id) {
@@ -2277,7 +2344,7 @@ function openDetalhe(id) {
 function openDetalheExamesTab(id) {
   const permitidos = pacientesPermitidosIdsSessao();
   if (permitidos && !permitidos.has(id)) {
-    alert('Nesta sessão você só acessa pacientes da sua agenda.');
+    alert('Nesta sessão você só acessa usuários da sua agenda.');
     return;
   }
   detalheCategoria = 'examesPaciente';
@@ -2289,7 +2356,7 @@ function openDetalheExamesTab(id) {
 function openDetalheEmConsulta(pacienteId, categoria) {
   const permitidos = pacientesPermitidosIdsSessao();
   if (permitidos && !permitidos.has(pacienteId)) {
-    alert('Nesta sessão você só acessa pacientes da sua agenda.');
+    alert('Nesta sessão você só acessa usuários da sua agenda.');
     return;
   }
   const p = pacientes.find(x => x.id === pacienteId);
@@ -2332,11 +2399,8 @@ function renderDetalhePage(id) {
   const cats = [
     { key:'saude',      icon:'❤️', label:'Saúde' },
     { key:'corpo',      icon:'🏃', label:'Corpo' },
-    { key:'medicacao',  icon:'💊', label:'Medicação' },
-    { key:'historico',  icon:'📋', label:'Histórico' },
-    { key:'examesPaciente', icon:'🧪', label:'Exames' },
-    { key:'contato',    icon:'📞', label:'Contato' },
   ];
+  if (detalheCategoria !== 'saude' && detalheCategoria !== 'corpo') detalheCategoria = 'saude';
 
   const catBtns = cats.map(c =>
     `<button class="detail-filter-btn ${detalheCategoria===c.key?'active':''}"
@@ -2374,7 +2438,10 @@ function renderDetalhePage(id) {
           onclick="openMedicaoHistoricoModal(${p.id},'saude','${c.key}')"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMedicaoHistoricoModal(${p.id},'saude','${c.key}');}">
           <div class="detail-card-accent" style="background:${c.accent}"></div>
-          <div class="detail-card-label">${c.label}</div>
+          <div class="detail-card-top">
+            <div class="detail-card-label">${c.label}</div>
+            <button type="button" class="detail-card-add" onclick="openIncluirDadoModal(${p.id},'saude','${c.key}',event)">Incluir dados</button>
+          </div>
           <div class="detail-card-value" style="color:${c.color}">${c.value}</div>
           <div class="detail-card-sub">${c.sub} · Toque para histórico</div>
         </div>`).join('')}
@@ -2568,14 +2635,14 @@ function renderDetalhePage(id) {
     const appBlock = app
       ? `<div class="panel" style="margin-bottom:14px">
           <div class="panel-header">
-            <div class="panel-title">App do paciente · sincronizado com a clínica</div>
+            <div class="panel-title">App do usuário · sincronizado com a clínica</div>
           </div>
           <div style="padding:14px 16px;font-size:13px;line-height:1.55">
             <div><strong>Usuário:</strong> ${app.usuario}</div>
             <div style="margin-top:6px"><strong>Senha provisória:</strong> ${
               app.primeiroAcessoPendente
                 ? `<code style="font-family:'DM Mono',monospace;background:var(--bg);padding:2px 8px;border-radius:4px">${app.senhaProvisoria}</code>`
-                : '<span style="color:var(--muted)">Já alterada pelo paciente no 1º acesso ao app</span>'
+                : '<span style="color:var(--muted)">Já alterada pelo usuário no 1º acesso ao app</span>'
             }</div>
             <div style="margin-top:10px;font-size:11px;color:var(--muted)">
               Mesmo cadastro usado na carteira e no celular. Link do app: <a href="${app.linkDownload}" target="_blank" rel="noopener noreferrer">${app.linkDownload}</a>
@@ -2590,7 +2657,7 @@ function renderDetalhePage(id) {
       <div class="panel" style="margin-bottom:14px">
         <div class="panel-header">
           <div class="panel-title">Foto na carteira</div>
-          <div style="font-size:11px;color:var(--muted);font-weight:500">Aparece na lista de pacientes e na agenda</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:500">Aparece na lista de usuários e na agenda</div>
         </div>
         <div style="padding:14px 16px;display:flex;flex-wrap:wrap;gap:16px;align-items:center">
           <div style="flex-shrink:0">${patientAvatarHtml(p, 80, 22)}</div>
@@ -2598,7 +2665,7 @@ function renderDetalhePage(id) {
             <input type="file" id="perfilFotoInput_${p.id}" accept="image/*" style="display:none" onchange="onPerfilFotoSelecionada(${p.id},event)" />
             <button type="button" class="btn-outline" onclick="document.getElementById('perfilFotoInput_${p.id}').click()">Trocar foto</button>
             ${p.fotoUrl && String(p.fotoUrl).indexOf('data:image') === 0 ? `<button type="button" class="btn-outline" onclick="removerFotoPaciente(${p.id})">Remover foto</button>` : ''}
-            <p class="cad-pac-hint" style="margin-top:8px;margin-bottom:0">Ajuda o médico a reconhecer o paciente nos cards (demo: arquivo só neste navegador).</p>
+            <p class="cad-pac-hint" style="margin-top:8px;margin-bottom:0">Ajuda o médico a reconhecer o usuário nos cards (demo: arquivo só neste navegador).</p>
           </div>
         </div>
       </div>`;
@@ -3099,50 +3166,6 @@ function submitAddMedForm() {
   if (paginaAtiva === 'medicacoes') renderMedicacoesPage();
 }
 
-/* -- ALERTAS (coluna em Pacientes) -- */
-function alertaTimestamp(a) {
-  if (a.criadoEm) return new Date(a.criadoEm).getTime();
-  return 0;
-}
-
-function setAlertasSideFiltro(f) {
-  if (f !== 'todos' && f !== 'critico' && f !== 'aviso') return;
-  alertasSideFiltro = f;
-  renderSideCol();
-}
-
-function sideAlertItemHtml(a) {
-  const pac = pacientes.find(p => p.id === a.pacienteId);
-  const pillClass = a.severity === 'red' ? 'alert-sev-pill--crit' : 'alert-sev-pill--warn';
-  const pillLabel = a.severity === 'red' ? 'Crítico' : 'Aviso';
-  const avatarEl = pac
-    ? patientAvatarHtml(pac, 32, 11)
-    : `<div class="alert-icon ${a.severity}">${a.icon}</div>`;
-  return `
-    <div class="alert-item alert-item--acao">
-      ${avatarEl}
-      <div class="alert-item-body" onclick="openDetalhe(${a.pacienteId})" title="Abrir ficha">
-        <div class="alert-item-top">
-          <span class="alert-sev-pill ${pillClass}">${pillLabel}</span>
-          <span class="alert-msg">${a.msg}</span>
-        </div>
-        <div class="alert-patient">${a.paciente}</div>
-        <div class="alert-time">${a.detalhe}</div>
-      </div>
-      <div class="alert-item-actions">
-        <button type="button" class="msg-btn" title="Mensagem" onclick="event.stopPropagation();openMsgModal(${a.pacienteId})">?</button>
-        <button type="button" class="dismiss-btn" onclick="event.stopPropagation();dismissAlert(${a.id})">Dispensar</button>
-      </div>
-    </div>`;
-}
-
-function dismissAlert(id) {
-  const a = alertas.find(x => x.id === id);
-  if (a) a.ativo = false;
-  renderSideCol();
-  renderSidebar();
-}
-
 /* -- PAINEL + ATESTADO + ANOTAÇÕES DE CONSULTA -- */
 function garantirModeloPaciente(p) {
   if (!p) return;
@@ -3331,7 +3354,7 @@ function iniciarAtendimentoClinicoAposTriagem(p, dadosTriagem) {
 function abrirModalTriagem(pacienteId, agendaId) {
   const permitidos = pacientesPermitidosIdsSessao();
   if (permitidos && !permitidos.has(pacienteId)) {
-    alert('Nesta sessão você só atende pacientes da sua agenda.');
+    alert('Nesta sessão você só atende usuários da sua agenda.');
     return;
   }
   const p = pacientes.find(x => x.id === pacienteId);
@@ -3389,7 +3412,7 @@ function abrirModalTriagem(pacienteId, agendaId) {
         </div>
         <div class="cad-pac-field cad-pac-field--full">
           <div class="textarea-label-row">
-            <label for="triagemSintomas">Sintomas relatados pelo paciente</label>
+            <label for="triagemSintomas">Sintomas relatados pelo usuário</label>
             ${htmlMicBtn('triagemSintomas', 'micBtnTriagem')}
           </div>
           <textarea id="triagemSintomas" class="med-form-input" rows="4" placeholder="Queixa principal, duração, intensidade…">${sintVal}</textarea>
@@ -3436,7 +3459,7 @@ function salvarTriagemForm() {
     return;
   }
   if (!sintomas) {
-    alert('Descreva os sintomas relatados pelo paciente.');
+    alert('Descreva os sintomas relatados pelo usuário.');
     return;
   }
   const normPressao = pressao;
@@ -3465,7 +3488,7 @@ function salvarTriagemForm() {
 function iniciarConsultaPaciente(pacienteId) {
   const permitidos = pacientesPermitidosIdsSessao();
   if (permitidos && !permitidos.has(pacienteId)) {
-    alert('Nesta sessão você só atende pacientes da sua agenda.');
+    alert('Nesta sessão você só atende usuários da sua agenda.');
     return;
   }
   const p = pacientes.find(x => x.id === pacienteId);
@@ -3711,14 +3734,7 @@ function imprimirLinhaTempoConsulta() {
 }
 
 function htmlBannerConsultaPerfil(p) {
-  if (!licencaConsultaAtiva()) {
-    return `<div class="perfil-consulta-banner" style="background:var(--bg)">
-      <p class="perfil-consulta-banner__info" style="color:var(--muted)">
-        🔒 Módulo de Consulta Clínica inativo.
-        <button type="button" class="btn-link" onclick="navigateTo('configuracoes')" style="font-size:13px;color:var(--purple);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline">Ativar em Configurações → Módulos</button>
-      </p>
-    </div>`;
-  }
+  if (!licencaConsultaAtiva()) return '';
   const pid = p.id;
   if (consultaEmTriagem(p)) {
     const agId = p.consultaSessao.agendaId != null ? p.consultaSessao.agendaId : 'null';
@@ -3769,7 +3785,7 @@ function htmlLinhaTempoConsulta(p, etapaAtual) {
       <span class="consulta-ativa-btn__icon" aria-hidden="true">${s.icon}</span>${s.label}</button>`;
   };
   const btnPerfil = etapa === 'perfil'
-    ? `<button type="button" class="consulta-ativa-btn consulta-ativa-btn--current" disabled aria-current="page" title="Ficha completa do paciente (análise)">
+    ? `<button type="button" class="consulta-ativa-btn consulta-ativa-btn--current" disabled aria-current="page" title="Ficha completa do usuário (análise)">
         <span class="consulta-ativa-btn__icon" aria-hidden="true">👤</span>Ficha completa</button>`
     : `<button type="button" class="consulta-ativa-btn" onclick="irEtapaConsulta(${pid},'perfil')" title="Abrir ficha completa sem encerrar o atendimento">
         <span class="consulta-ativa-btn__icon" aria-hidden="true">👤</span>Ficha completa</button>`;
@@ -3800,7 +3816,6 @@ function htmlPacienteCabecalhoPadrao(p, opts) {
     : `Último registro: ${p.ultimoReg} · Próxima consulta: ${p.proximaConsulta}`;
   const sideActions = showSideActions
     ? `<div class="patient-detail-header-actions">
-        <button type="button" class="btn-primary" style="white-space:nowrap" onclick="openAgendaModal(${p.id})">📅 Agendar</button>
         <button class="msg-btn" onclick="openMsgModal(${p.id})">✉ Mensagem</button>
       </div>`
     : '';
@@ -3943,7 +3958,7 @@ function htmlExamesPacienteView(p, opts) {
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">Solicitar exame</div>
-          <div style="font-size:11px;color:var(--muted);font-weight:500">Registro do pedido para este paciente</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:500">Registro do pedido para este usuário</div>
         </div>
         <div style="padding:14px 16px 18px">
           <div class="med-form-field">
@@ -3995,7 +4010,7 @@ function htmlExamesPacienteView(p, opts) {
         (anexosN ? ' · ' + anexosN + ' anexo(s)' : '') + '</div>' +
         '<div class="exame-solic-item__actions">' + btnEdit + '</div></div>';
     }).join('')
-    : '<div class="empty-state" style="padding:16px">Nenhuma solicitação registrada para este paciente.</div>';
+    : '<div class="empty-state" style="padding:16px">Nenhuma solicitação registrada para este usuário.</div>';
 
   const cardsEx = p.examesArquivos.map(ex => {
     const isPdf = ex.mime === 'application/pdf';
@@ -4003,7 +4018,7 @@ function htmlExamesPacienteView(p, opts) {
       ? '<div class="exame-perfil-pdf">PDF<br><a href="' + escAttrDataUrl(ex.dataUrl) + '" download="' + escE(ex.nomeArquivo) + '">Baixar</a>' +
         '<br><button type="button" class="btn-outline" style="margin-top:8px;font-size:12px;padding:6px 10px" onclick="abrirExamePacienteNovaAba(' + pid + ',' + ex.id + ')">Abrir em nova aba</button></div>'
       : '<div class="exame-perfil-preview"><img src="' + escAttrDataUrl(ex.dataUrl) + '" alt="" onclick="abrirExamePacienteNovaAba(' + pid + ',' + ex.id + ')" title="Abrir"/></div>';
-    const origLabel = ex.origem === 'paciente' ? 'Paciente (app/recepção)' : 'Clínica / médico';
+    const origLabel = ex.origem === 'paciente' ? 'Usuário (app/recepção)' : 'Clínica / médico';
     return '<div class="exame-perfil-card">' +
       '<div class="exame-perfil-card-head">' + escE(ex.titulo) +
       '<div class="exame-perfil-card-meta">' + escE(ex.dataRegistro) + ' · ' + origLabel + ' · ' + escE(ex.nomeArquivo) + '</div></div>' +
@@ -4026,7 +4041,7 @@ function htmlExamesPacienteView(p, opts) {
           <label class="med-form-label" for="exameOrigem_${pid}">Origem</label>
           <select class="med-form-select" id="exameOrigem_${pid}">
             <option value="clinica">Clínica / médico</option>
-            <option value="paciente">Paciente (app ou recepção)</option>
+            <option value="paciente">Usuário (app ou recepção)</option>
           </select>
         </div>
         <div class="med-form-field">
@@ -4336,7 +4351,7 @@ function renderAtestadoModalForm() {
         <input type="text" id="atestadoData" value="${esc(hoje)}" />
       </div>
       <div class="atestado-field">
-        <label for="atestadoPacienteNome">Paciente</label>
+        <label for="atestadoPacienteNome">Usuário</label>
         <input type="text" id="atestadoPacienteNome" readonly value="${esc(p.nome)}" />
       </div>
       <div class="atestado-field">
@@ -4349,8 +4364,8 @@ function renderAtestadoModalForm() {
       </div>
       <div class="atestado-field">
         <label for="atestadoCorpo">Texto do atestado *</label>
-        <textarea id="atestadoCorpo" required placeholder="Atesto para os devidos fins que o(a) paciente acima identificado(a) necessita de repouso / comparecimento médico…"></textarea>
-        <button type="button" class="btn-outline" id="btnAtestadoIA" style="margin-top:8px;font-size:12px" onclick="gerarTextoAtestadoIA()" title="IA gera o texto com base no histórico do paciente">✨ Sugerir texto com IA</button>
+        <textarea id="atestadoCorpo" required placeholder="Atesto para os devidos fins que o(a) usuário acima identificado(a) necessita de repouso / comparecimento médico…"></textarea>
+        <button type="button" class="btn-outline" id="btnAtestadoIA" style="margin-top:8px;font-size:12px" onclick="gerarTextoAtestadoIA()" title="IA gera o texto com base no histórico do usuário">✨ Sugerir texto com IA</button>
       </div>
       <div class="atestado-preview" id="atestadoPreviewBox" style="display:none"></div>
     </div>
@@ -4388,7 +4403,7 @@ function montarHtmlAtestadoDocumento() {
       <span style="font-size:12px;color:#64748b">${esc(dadosClinica.endereco || '')}</span>
     </div>
     <p style="text-align:center;font-weight:700;margin-bottom:16px">ATESTADO MÉDICO</p>
-    <p><strong>Paciente:</strong> ${esc(p.nome)}</p>
+    <p><strong>Usuário:</strong> ${esc(p.nome)}</p>
     <p><strong>Data:</strong> ${esc(data)}</p>
     ${extra}
     <p style="margin-top:14px;line-height:1.6">${esc(corpo).replace(/\n/g, '<br>')}</p>
@@ -4410,7 +4425,7 @@ let receitaRowsState = [];
 function abrirReceitaModal(pacienteId) {
   const permitidos = pacientesPermitidosIdsSessao();
   if (permitidos && !permitidos.has(pacienteId)) {
-    alert('Nesta sessão você só emite receita para pacientes da sua agenda.');
+    alert('Nesta sessão você só emite receita para usuários da sua agenda.');
     return;
   }
   const p = pacientes.find(x => x.id === pacienteId);
@@ -4539,7 +4554,7 @@ function registrarReceitaNoProntuario() {
   if (p.consultaSessao && p.consultaSessao.ativa) registrarEventoConsulta(p, 'receita', 'Receita registrada no prontuário');
   if (paginaAtiva === 'detalhe' && pacienteDetalheId === p.id) renderDetalhePage(p.id);
   if (paginaAtiva === 'consulta' && consultaAtivaPacienteId === p.id) renderConsultaAtivaPage(p.id);
-  alert('Receita registrada na linha do tempo do paciente (demonstração).');
+  alert('Receita registrada na linha do tempo do usuário (demonstração).');
 }
 
 function receitaAdicionarMedicamento() {
@@ -4639,7 +4654,7 @@ function renderReceitaModalForm() {
       ${midSess != null ? '<p class="cad-pac-hint" style="margin:0 0 12px;font-size:12px">Você está emitindo como <strong>médico logado</strong>. A assinatura da receita é sempre a sua.</p>' : ''}
       ${blocoProfissional}
       <div class="atestado-field">
-        <label for="receitaPacienteNome">Paciente</label>
+        <label for="receitaPacienteNome">Usuário</label>
         <input type="text" id="receitaPacienteNome" readonly value="${esc(p.nome)}" />
       </div>
       <div class="atestado-field">
@@ -4649,7 +4664,7 @@ function renderReceitaModalForm() {
       <div class="receita-meds-wrap">${rowsHtml}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <button type="button" class="btn-outline atestado-no-print" onclick="receitaAdicionarMedicamento()">+ Adicionar medicamento</button>
-        <button type="button" class="btn-outline atestado-no-print" id="btnReceitaIA" onclick="sugerirReceitaIA()" title="IA sugere medicações com base no histórico do paciente">✨ Sugerir medicações com IA</button>
+        <button type="button" class="btn-outline atestado-no-print" id="btnReceitaIA" onclick="sugerirReceitaIA()" title="IA sugere medicações com base no histórico do usuário">✨ Sugerir medicações com IA</button>
       </div>
       <div class="atestado-field">
         <label for="receitaObsGeral">Observações gerais</label>
@@ -4706,7 +4721,7 @@ function montarHtmlReceitaDocumento() {
       <span style="font-size:12px;color:#64748b">${esc(dadosClinica.endereco)} · Tel. ${esc(dadosClinica.telefone)}</span>
     </div>
     <p style="text-align:center;font-weight:700;margin-bottom:16px">RECEITA MÉDICA</p>
-    <p><strong>Paciente:</strong> ${esc(p.nome)} &nbsp;&nbsp; <strong>Data:</strong> ${esc(data)}</p>
+    <p><strong>Usuário:</strong> ${esc(p.nome)} &nbsp;&nbsp; <strong>Data:</strong> ${esc(data)}</p>
     <hr style="margin:16px 0;border:none;border-top:1px solid #ccc" />
     ${itens}
     <hr style="margin:16px 0;border:none;border-top:1px solid #ccc" />
@@ -4807,7 +4822,7 @@ function abrirConsultaAtiva(pacienteId) {
 }
 
 function voltarDeConsultaAtiva() {
-  if (sessaoMedicoId() != null) navigateTo('agenda');
+  if (sessaoMedicoId() != null) navigateTo('pacientes');
   else navigateTo('painel');
 }
 
@@ -4960,16 +4975,15 @@ function renderPainelPage() {
 
   root.innerHTML = `
     <p class="painel-intro">
-      Pacientes na fila de atendimento. Use <strong>Iniciar / retomar atendimento</strong> para registrar a consulta (anotação, receita, exames).
+      Usuários na fila de atendimento. Use <strong>Iniciar / retomar atendimento</strong> para registrar a consulta (anotação, receita, exames).
       <strong>Analisar ficha</strong> apenas visualiza dados. Ao <strong>encerrar</strong>, registra o tempo e marca o horário como realizado (demo).
     </p>
     <div class="panel agenda-main-panel dash-queue-panel">
       <div class="panel-header">
         <div>
           <div class="panel-title">Em atendimento agora (${vis.length})</div>
-          <div class="dash-queue-hint">Integrado à <strong>Agenda</strong> · mesma experiência no fluxo consultório ? prontuário.</div>
+          <div class="dash-queue-hint">Mesma experiência no fluxo consultório → prontuário.</div>
         </div>
-        <button type="button" class="btn-outline" onclick="navigateTo('agenda')">Ir à agenda</button>
       </div>
       ${cards}
     </div>`;
@@ -5106,8 +5120,8 @@ function renderAgendaPage() {
     <div class="agenda-sync-banner">
       <span class="agenda-sync-icon">??</span>
       <div>
-        <strong>Mesma agenda no celular do paciente.</strong>
-        O que você agenda aqui (ou pelo perfil) reflete no app TeepSaude do paciente: lembretes, confirmação e aviso de alterações  quando a sincronização estiver ligada no ambiente real.
+        <strong>Mesma agenda no celular do usuário.</strong>
+        O que você agenda aqui (ou pelo perfil) reflete no app TeepSaude do usuário: lembretes, confirmação e aviso de alterações  quando a sincronização estiver ligada no ambiente real.
       </div>
     </div>
     <div class="metrics-row metrics-row--agenda">
@@ -5186,7 +5200,7 @@ function renderAgendaModalForm() {
     <form style="display:flex;flex-direction:column;flex:1;min-height:0" onsubmit="submitAgendaForm(event)">
       <div class="med-form-body">
         <p class="med-form-hint" style="margin-top:4px">
-          O agendamento entra na agenda da clínica e fica disponível para o paciente no app (lembrete e confirmação), no fluxo integrado.
+          O agendamento entra na agenda da clínica e fica disponível para o usuário no app (lembrete e confirmação), no fluxo integrado.
         </p>
         <div class="med-form-field">
           <label class="med-form-label" for="agendaFormDia">Dia</label>
@@ -5197,7 +5211,7 @@ function renderAgendaModalForm() {
           <input class="med-form-input" type="time" id="agendaFormHora" value="09:00" required />
         </div>
         <div class="med-form-field">
-          <label class="med-form-label" for="agendaFormPaciente">Paciente</label>
+          <label class="med-form-label" for="agendaFormPaciente">Usuário</label>
           <select class="med-form-select" id="agendaFormPaciente" required>${optsPac}</select>
         </div>
         <div class="med-form-field">
@@ -5240,7 +5254,7 @@ function submitAgendaForm(ev) {
   const p = pacientes.find(x => x.id === pid);
   const m = listaMedicosAtivos().find(x => x.id === mid);
   if (!p || !m || !horaRaw || !dataIso) {
-    alert('Preencha dia, paciente, profissional e horário.');
+    alert('Preencha dia, usuário, profissional e horário.');
     return;
   }
   if (dataIso < isoHoje()) {
@@ -5284,13 +5298,12 @@ function submitAgendaForm(ev) {
   p.historico.unshift({
     data: dataHist,
     tipo: 'green',
-    msg: `Consulta agendada: ${tipoLabels[motivo] || 'Consulta'}  ${hora} (${diaTxt}) com ${m.nome}. Sincronizado com o app do paciente.`,
+    msg: `Consulta agendada: ${tipoLabels[motivo] || 'Consulta'}  ${hora} (${diaTxt}) com ${m.nome}. Sincronizado com o app do usuário.`,
   });
   p.proximaConsulta = `${hora} · ${diaRotulo} · ${labelMod}`;
 
   closeAgendaModal();
   if (paginaAtiva === 'agenda') renderAgendaPage();
-  if (paginaAtiva === 'pacientes') renderSideCol();
   if (paginaAtiva === 'detalhe' && pacienteDetalheId) renderDetalhePage(pacienteDetalheId);
 }
 
@@ -5335,7 +5348,7 @@ function renderMedicacoesPage() {
     <div class="panel">
       <div class="panel-header"><div class="panel-title">Controle de medicamentos  ${medicacoes.length} registros</div></div>
       <div class="med-row header">
-        <div class="col-label">Medicamento / Paciente</div>
+        <div class="col-label">Medicamento / Usuário</div>
         <div class="col-label">Estoque</div>
         <div class="col-label">Status</div>
         <div class="col-label">Próx. renovação</div>
@@ -5620,47 +5633,6 @@ function renderConfiguracoesPage() {
   const somenteLeitura = sess && sessaoEhMedico();
   root.innerHTML = `
     <div class="config-grid">
-      ${!somenteLeitura ? `
-      <div class="panel" style="grid-column:1/-1">
-        <div class="panel-header"><div class="panel-title">🔑 Módulos</div></div>
-        <div style="padding:16px;display:flex;flex-direction:column;gap:14px;font-size:13px">
-          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
-            <span style="font-size:22px">📊</span>
-            <div style="flex:1">
-              <div style="font-weight:600">Monitoramento</div>
-              <div style="color:var(--muted);font-size:12px;margin-top:2px">Sinais vitais, alertas, agenda, medicações — sempre ativo</div>
-            </div>
-            <span style="background:#16a34a;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap">ATIVO</span>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:${licencaConsultaAtiva() ? 'var(--purple-light,#f3f0ff)' : 'var(--bg)'};border-radius:8px;border:1px solid ${licencaConsultaAtiva() ? '#c4b5fd' : 'var(--border)'}">
-            <span style="font-size:22px;margin-top:2px">🩺</span>
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                Consulta Clínica
-                <span style="background:${licencaConsultaAtiva() ? 'var(--purple)' : '#e5e7eb'};color:${licencaConsultaAtiva() ? '#fff' : 'var(--muted)'};font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;white-space:nowrap">${licencaConsultaAtiva() ? 'ATIVO' : 'INATIVO'}</span>
-              </div>
-              <div style="color:var(--muted);font-size:12px;margin-top:2px">Agenda, triagem, atendimento clínico, receita, atestado, exames e painel de fila</div>
-              ${licencaConsultaAtiva()
-                ? `<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                    <span style="font-size:12px;color:var(--muted)">Chave: <code style="font-size:11px;background:var(--bg);padding:2px 6px;border-radius:4px;border:1px solid var(--border)">${licencaConsultaChave()}</code></span>
-                    <button type="button" class="btn-outline" style="font-size:12px"
-                      onclick="if(confirm('Desativar o módulo de Consulta Clínica?')){desativarModuloConsulta();renderConfiguracoesPage();renderSidebar();}">Desativar</button>
-                  </div>`
-                : `<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                    <input type="text" id="licencaConsultaInput" placeholder="TEEP-XXXX-XXXX-XXXX"
-                      style="flex:1;min-width:200px;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'DM Mono',monospace;background:var(--white);color:var(--text);outline:none;text-transform:uppercase"
-                      oninput="this.value=this.value.toUpperCase()" />
-                    <button type="button" class="btn-primary"
-                      onclick="var r=ativarModuloConsulta(document.getElementById('licencaConsultaInput').value);if(r.ok){renderConfiguracoesPage();renderSidebar();alert('✅ Módulo Consulta Clínica ativado!');}else{alert(r.msg);}">Ativar</button>
-                  </div>
-                  <p class="cad-pac-hint" style="margin-top:8px;margin-bottom:0">
-                    Demo: use <code style="font-size:11px">TEEP-CONS-2024-DEMO</code>, <code style="font-size:11px">TEEP-CONS-2025-FULL</code> ou <code style="font-size:11px">TEEP-CONS-PRO1-ATIV</code>.
-                  </p>`
-              }
-            </div>
-          </div>
-        </div>
-      </div>` : ''}
       <div class="panel">
         <div class="panel-header"><div class="panel-title">Dados da clínica</div></div>
         <div style="padding:16px;display:flex;flex-direction:column;gap:12px;font-size:13px">
@@ -5674,7 +5646,6 @@ function renderConfiguracoesPage() {
       <div class="panel">
         <div class="panel-header"><div class="panel-title">Gestão</div></div>
         <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-          ${somenteLeitura ? '' : `<button type="button" class="btn-outline" onclick="navigateTo('medicos')">Abrir cadastro de médicos</button>`}
           <p class="cad-pac-hint" style="margin:0">Permissões por perfil e integração avançada ficam para a fase com backend.</p>
         </div>
       </div>
@@ -5750,7 +5721,7 @@ function tentarLogin(tipo) {
   const err = document.getElementById('loginErro');
   if (err) { err.style.display = 'none'; err.textContent = ''; }
   if (tipo === 'clinica') {
-    if (u === 'clinica' && s === 'admin123') {
+    if (u.toLowerCase() === 'saude@teep.com.br' && s === 'teepsaude') {
       sessionStorage.setItem(SESSAO_STORAGE_KEY, JSON.stringify({
         tipo: 'clinica',
         loginEm: Date.now(),

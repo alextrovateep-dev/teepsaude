@@ -55,7 +55,7 @@ function renderExamModuleSolicitacoes(root) {
   const pendentes = base.filter(e => !['concluido', 'resultado_recebido'].includes(e.statusFluxo)).length;
   const concluidos = base.filter(e => e.statusFluxo === 'concluido').length;
 
-  const optsPac = `<option value="">Todos os pacientes</option>${[...pacientesDaSessao()]
+  const optsPac = `<option value="">Todos os usuários</option>${[...pacientesDaSessao()]
     .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
     .map(p => {
       const sel = examSolicFiltroPacienteId != null && String(examSolicFiltroPacienteId) === String(p.id) ? ' selected' : '';
@@ -115,7 +115,7 @@ function renderExamModuleSolicitacoes(root) {
         ${EXAME_STATUS_FLUXO_LISTA.map(s => `<button type="button" class="filter-chip ${fa(s)}" onclick="setExamSolicFiltroStatus('${s}')">${EXAME_STATUS_FLUXO_LABEL[s]}</button>`).join('')}
       </div>
       <div class="exam-filter-row">
-        <label>Paciente <select class="med-form-select" onchange="setExamSolicFiltroPaciente(this.value)">${optsPac}</select></label>
+        <label>Usuário <select class="med-form-select" onchange="setExamSolicFiltroPaciente(this.value)">${optsPac}</select></label>
         <label>Prioridade <select class="med-form-select" onchange="setExamSolicFiltroPrioridade(this.value)">
           <option value="todos"${examSolicFiltroPrioridade === 'todos' ? ' selected' : ''}>Todas</option>
           <option value="normal"${examSolicFiltroPrioridade === 'normal' ? ' selected' : ''}>Normal</option>
@@ -126,7 +126,7 @@ function renderExamModuleSolicitacoes(root) {
     <div class="panel">
       <div class="panel-header"><div class="panel-title">Solicitações — ${lista.length} de ${base.length}</div></div>
       <div class="exam-row exam-row--solicit header">
-        <div class="col-label">Exame / Paciente</div>
+        <div class="col-label">Exame / Usuário</div>
         <div class="col-label">Tipo</div>
         <div class="col-label">Data</div>
         <div class="col-label">Prioridade</div>
@@ -145,7 +145,7 @@ function renderExamModuleResultados(root) {
   const appN = base.filter(r => r.origem.indexOf('App') >= 0).length;
   const clinN = base.length - appN;
 
-  const optsPac = `<option value="">Todos os pacientes</option>${[...pacientesDaSessao()]
+  const optsPac = `<option value="">Todos os usuários</option>${[...pacientesDaSessao()]
     .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
     .map(p => {
       const sel = examResFiltroPacienteId != null && String(examResFiltroPacienteId) === String(p.id) ? ' selected' : '';
@@ -177,11 +177,11 @@ function renderExamModuleResultados(root) {
       </div>
     </div>`;
     }).join('')
-    : '<p class="empty-state" style="padding:24px 16px">Nenhum resultado com anexo neste filtro. Laudos do app aparecem após o paciente autorizar o compartilhamento.</p>';
+    : '<p class="empty-state" style="padding:24px 16px">Nenhum resultado com anexo neste filtro. Laudos do app aparecem após o usuário autorizar o compartilhamento.</p>';
 
   root.innerHTML = `
     <div class="exam-module-head">
-      <p class="exam-module-hint">${sessaoEhMedico() ? 'Exames compartilhados com você pelo paciente (após autorização no app) ou anexados pela clínica.' : 'Consulta e análise de laudos — app do paciente, clínica e solicitações com anexo.'}</p>
+      <p class="exam-module-hint">${sessaoEhMedico() ? 'Exames compartilhados com você pelo usuário (após autorização no app) ou anexados pela clínica.' : 'Consulta e análise de laudos — app do usuário, clínica e solicitações com anexo.'}</p>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
       <div class="metric-card"><div class="metric-accent" style="background:var(--purple)"></div>
@@ -191,7 +191,7 @@ function renderExamModuleResultados(root) {
       <div class="metric-card"><div class="metric-accent" style="background:var(--blue)"></div>
         <div class="metric-label">Via app</div>
         <div class="metric-value" style="color:var(--blue)">${appN}</div>
-        <div class="metric-sub">Paciente / autorizado</div></div>
+        <div class="metric-sub">Usuário / autorizado</div></div>
       <div class="metric-card"><div class="metric-accent" style="background:var(--green)"></div>
         <div class="metric-label">Total anexos</div>
         <div class="metric-value" style="color:var(--green)">${total}</div>
@@ -199,7 +199,7 @@ function renderExamModuleResultados(root) {
     </div>
     <div class="exam-filters-bar">
       <div class="exam-filter-row">
-        <label>Paciente <select class="med-form-select" onchange="setExamResFiltroPaciente(this.value)">${optsPac}</select></label>
+        <label>Usuário <select class="med-form-select" onchange="setExamResFiltroPaciente(this.value)">${optsPac}</select></label>
         <label>Tipo <select class="med-form-select" onchange="setExamResFiltroTipo(this.value)">${optsTipo}</select></label>
         <label>Período <select class="med-form-select" onchange="setExamResPeriodoPreset(this.value)">
           <option value="none"${selPer('none')}>Qualquer data</option>
@@ -217,7 +217,7 @@ function renderExamModuleResultados(root) {
     <div class="panel">
       <div class="panel-header"><div class="panel-title">Resultados — ${base.length} de ${total} anexos</div></div>
       <div class="exam-row exam-row--result header">
-        <div class="col-label">Exame / Paciente</div>
+        <div class="col-label">Exame / Usuário</div>
         <div class="col-label">Tipo</div>
         <div class="col-label">Data</div>
         <div class="col-label">Origem</div>
@@ -253,13 +253,13 @@ function abrirExameResultadoViewer(key) {
       <button type="button" class="modal-close" onclick="fecharModalExameResultado()" aria-label="Fechar"></button>
     </div>
     <div style="padding:16px 20px;font-size:13px;line-height:1.5">
-      <p style="margin:0 0 8px"><strong>Paciente:</strong> ${esc(row.paciente)} · <strong>Origem:</strong> ${esc(row.origem)}</p>
+      <p style="margin:0 0 8px"><strong>Usuário:</strong> ${esc(row.paciente)} · <strong>Origem:</strong> ${esc(row.origem)}</p>
       <p style="margin:0 0 14px;color:var(--muted);font-size:12px">${esc(row.data)} · ${esc(ax.nomeArquivo || '')}</p>
       ${prev}
       <div style="margin-top:14px">
         <button type="button" class="btn-outline" style="font-size:12px" id="btnInterpretarExame_${row.solicitacaoId || 0}"
           onclick="interpretarExameIA(${row.solicitacaoId || 0}, ${row.pacienteId || 0})"
-          title="IA analisa o contexto do exame e compara com o histórico do paciente">✨ Interpretar com IA</button>
+          title="IA analisa o contexto do exame e compara com o histórico do usuário">✨ Interpretar com IA</button>
         <div id="iaExameResultadoTexto_${row.solicitacaoId || 0}" style="display:none;margin-top:10px;padding:12px 14px;background:var(--bg);border-radius:8px;border:1px solid var(--border);font-size:13px;line-height:1.6;color:var(--text)"></div>
       </div>
     </div>`;
@@ -287,7 +287,7 @@ function abrirModalExameSolicitacao(exameId, pacienteIdFixo) {
   const blocoPac = pidFix != null
     ? `<input type="hidden" id="exSolPac" value="${pidFix}" />`
     : `<div class="cad-pac-field cad-pac-field--full">
-          <label for="exSolPac">Paciente *</label>
+          <label for="exSolPac">Usuário *</label>
           <select id="exSolPac" required>${optsPac}</select>
         </div>`;
   const optsTipo = EXAME_TIPOS_LISTA.map(t => `<option${e && e.tipo === t ? ' selected' : ''}>${t}</option>`).join('');
@@ -356,7 +356,7 @@ function salvarExameSolicitacaoForm() {
   const prioridade = document.getElementById('exSolPri') && document.getElementById('exSolPri').value;
   const statusFluxo = document.getElementById('exSolSt') && document.getElementById('exSolSt').value;
   if (!pid || !nome) {
-    alert('Informe paciente e nome do exame.');
+    alert('Informe usuário e nome do exame.');
     return;
   }
   const p = pacientes.find(x => x.id === pid);

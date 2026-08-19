@@ -81,7 +81,6 @@ function desativarModuloConsulta() {
  */
 function paginaRequerModuloConsulta(page) {
   return [
-    'agenda',
     'painel',
     'consulta',
     'examesSolicitacoes',
@@ -91,7 +90,7 @@ function paginaRequerModuloConsulta(page) {
 }
 
 /**
- * Retorna true se uma ação clínica dentro do perfil do paciente
+ * Retorna true se uma ação clínica dentro do perfil do usuário
  * requer o módulo Consulta (atestado, receita, triagem, exames, anotação).
  */
 function acaoRequerModuloConsulta(acao) {
@@ -158,7 +157,7 @@ function htmlModuloConsultaBloqueado() {
       </div>
       <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">
         Esta funcionalidade faz parte do módulo de consulta clínica,
-        que inclui agenda, triagem, atendimento, receita, atestado e exames.
+        que inclui triagem, atendimento, receita, atestado e exames.
         Ative com sua chave de licença.
       </p>
       <button type="button" class="btn-primary"

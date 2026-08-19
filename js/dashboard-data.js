@@ -16,7 +16,7 @@ const medico = {
   cidade: dadosClinica.cidade,
 };
 
-/** Link para o paciente baixar o app (troque pela URL real: loja ou landing) */
+/** Link para o usuário baixar o app (troque pela URL real: loja ou landing) */
 const APP_PACIENTE_DOWNLOAD_URL = 'https://teepsaude.app/baixar';
 
 const pacientes = [
@@ -136,7 +136,7 @@ const pacientes = [
     ],
     msgs:[],
     anotacoesConsultas: [
-      { id: 1, data: '31/03/2025 11:00', texto: 'Consulta de rotina. PA 128/82. Reforço adesão à Losartana. Paciente assintomático.', medicoNome: 'Dr. Carlos Mendes', medicoCrm: 'CRM 54.321-SP' },
+      { id: 1, data: '31/03/2025 11:00', texto: 'Consulta de rotina. PA 128/82. Reforço adesão à Losartana. Usuário assintomático.', medicoNome: 'Dr. Carlos Mendes', medicoCrm: 'CRM 54.321-SP' },
     ],
   },
   {
@@ -351,7 +351,7 @@ const pacientes = [
   },
 ];
 
-/** Próximo id ao cadastrar novos pacientes (demo) */
+/** Próximo id ao cadastrar novos usuários (demo) */
 let pacienteNextId = 19;
 
 /**
@@ -445,7 +445,7 @@ function pacienteVinculoPendente(p) {
   return p.vinculoApp && p.vinculoApp.estado === 'pendente';
 }
 
-/* Medidas corporais extras (mock) — mescla com peso/altura/imc do paciente */
+/* Medidas corporais extras (mock) — mescla com peso/altura/imc do usuário */
 function corpoParaPaciente(p) {
   const x = p.corpo || {};
   return {
@@ -567,7 +567,7 @@ const alertas = [
   { id:10,icon:'🩸', severity:'amber', msg:'Hemoglobina 9,2 g/dL — anemia moderada',        paciente:'Raimunda Ferreira Castro',detalhe:'Registrado em exame de 02/04',  ativo:true, pacienteId:15, criadoEm:'2026-04-02T10:00:00' },
 ];
 
-/** Agenda clínica — mesma base usada no app do paciente (lembretes / confirmação) */
+/** Agenda clínica — mesma base usada no app do usuário (lembretes / confirmação) */
 let agendaNextId = 200;
 
 /** Cadastro completo de profissionais (substitui o antigo profissionaisAgenda) */
@@ -731,8 +731,8 @@ let exameSolicitacaoNextId = 13;
 let exameAnexoCatalogoNextId = 5000;
 
 /**
- * Solicitações de exames (gestão). Resultados = anexos aqui + examesArquivos do paciente.
- * compartilhadoMedicoIds: médicos que podem ver o resultado após autorização do paciente.
+ * Solicitações de exames (gestão). Resultados = anexos aqui + examesArquivos do usuário.
+ * compartilhadoMedicoIds: médicos que podem ver o resultado após autorização do usuário.
  */
 let exames = [
   { id:1, nome:'Eletrocardiograma', pacienteId:8, paciente:'Benedita Rocha Alves', data:'01/04/2025', dataIso:'2025-04-01', tipo:'Cardiológico', prioridade:'normal', statusFluxo:'solicitado', origem:'clinica', anexos:[], compartilhadoMedicoIds:[1], autorizadoPaciente:true },
@@ -792,8 +792,7 @@ const catalogoMedicamentos = [
 ];
 
 const navPrincipal = [
-  { icon:'👥', label:'Pacientes',  page:'pacientes',  badge: pacientes.filter(p=>p.status==='critico').length, badgeColor:'' },
-  { icon:'📅', label:'Agenda',     page:'agenda' },
+  { icon:'👥', label:'Usuários',  page:'pacientes',  badge: pacientes.filter(p=>p.status==='critico').length, badgeColor:'' },
   { icon:'🩺', label:'Painel',     page:'painel' },
 ];
 /** Itens fixos da seção Análise (exames entram via navAnaliseParaSessao no app) */
@@ -801,6 +800,5 @@ const navAnalise = [
   { icon:'💊', label:'Medicações', page:'medicacoes', badge: medicacoes.filter(m=>m.status==='critico').length, badgeColor:'' },
 ];
 const navClinica = [
-  { icon:'👨‍⚕️', label:'Médicos', page:'medicos' },
   { icon:'⚙️', label:'Configurações', page:'configuracoes' },
 ];
